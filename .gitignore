@@ -1,0 +1,18 @@
+# Installed dependencies
+node_modules/
+
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Generated build and test output
+dist/
+coverage/
+
+# Local logs
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
