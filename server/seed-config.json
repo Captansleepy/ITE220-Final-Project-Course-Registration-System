@@ -1,0 +1,221 @@
+{
+  "credits": {
+    "CSC220": 4,
+    "CSC353": 4,
+    "ECO200": 4,
+    "ENG101": 4,
+    "ENG102": 4,
+    "ENG103": 4,
+    "GEO101": 4,
+    "HIS101": 4,
+    "ITE101": 4,
+    "ITE102": 4,
+    "ITE104": 4,
+    "ITE120": 4,
+    "ITE201": 4,
+    "ITE210": 4,
+    "ITE221": 4,
+    "ITE222": 4,
+    "ITE224": 4,
+    "ITE231": 4,
+    "ITE233": 4,
+    "ITE240": 4,
+    "ITE254": 4,
+    "ITE321": 4,
+    "ITE331": 4,
+    "ITE343": 4,
+    "ITE365": 4,
+    "ITE368": 4,
+    "ITE420": 4,
+    "ITE421": 4,
+    "ITE441": 4,
+    "ITE442": 4,
+    "ITE451": 4,
+    "ITE475": 4,
+    "ITE476": 4,
+    "ITE477": 4,
+    "ITE479": 4,
+    "MAT101": 4,
+    "MAT102": 4,
+    "MIS103": 4,
+    "PSY101": 4,
+    "PSY202": 4,
+    "SOC221": 4,
+    "STA101": 4,
+    "THA101": 4
+  },
+  "advisorAssignments": {
+    "STU001": "wendylu@gmail.com",
+    "STU002": "wendylu@gmail.com",
+    "STU003": "wendylu@gmail.com",
+    "STU004": "wendylu@gmail.com",
+    "STU005": "wendylu@gmail.com",
+    "STU006": "wendylu@gmail.com",
+    "STU007": "wendylu@gmail.com",
+    "STU008": "wendylu@gmail.com",
+    "STU009": "wendylu@gmail.com",
+    "STU010": "wendylu@gmail.com",
+    "STU011": "wendylu@gmail.com",
+    "STU012": "wendylu@gmail.com",
+    "STU013": "wendylu@gmail.com",
+    "STU014": "zak@gmail.com",
+    "STU015": "zak@gmail.com",
+    "STU016": "zak@gmail.com",
+    "STU017": "zak@gmail.com",
+    "STU018": "zak@gmail.com",
+    "STU019": "zak@gmail.com",
+    "STU020": "zak@gmail.com",
+    "STU021": "zak@gmail.com",
+    "STU022": "zak@gmail.com",
+    "STU023": "zak@gmail.com",
+    "STU024": "zak@gmail.com",
+    "STU025": "zak@gmail.com"
+  },
+  "offerings": [
+    {
+      "code": "CSC220",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 01",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Monday",
+          "startTime": "08:30",
+          "endTime": "10:30"
+        },
+        {
+          "day": "Thursday",
+          "startTime": "08:30",
+          "endTime": "10:30"
+        }
+      ]
+    },
+    {
+      "code": "ENG103",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 02",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Monday",
+          "startTime": "10:30",
+          "endTime": "12:30"
+        },
+        {
+          "day": "Thursday",
+          "startTime": "10:30",
+          "endTime": "12:30"
+        }
+      ]
+    },
+    {
+      "code": "ITE102",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 03",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Monday",
+          "startTime": "12:30",
+          "endTime": "16:30"
+        }
+      ]
+    },
+    {
+      "code": "ITE254",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 04",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Tuesday",
+          "startTime": "08:30",
+          "endTime": "12:30"
+        }
+      ]
+    },
+    {
+      "code": "ITE321",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 05",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Tuesday",
+          "startTime": "12:30",
+          "endTime": "16:30"
+        }
+      ]
+    },
+    {
+      "code": "ITE475",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 06",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Wednesday",
+          "startTime": "08:30",
+          "endTime": "12:30"
+        }
+      ]
+    },
+    {
+      "code": "MAT101",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 07",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Wednesday",
+          "startTime": "12:30",
+          "endTime": "16:30"
+        }
+      ]
+    },
+    {
+      "code": "STA101",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 08",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Thursday",
+          "startTime": "12:30",
+          "endTime": "16:30"
+        }
+      ]
+    },
+    {
+      "code": "THA101",
+      "section": 1,
+      "room": "Demo Room 301",
+      "instructor": "Demo Instructor 09",
+      "capacity": 30,
+      "addDropOpen": false,
+      "meetings": [
+        {
+          "day": "Friday",
+          "startTime": "08:30",
+          "endTime": "12:30"
+        }
+      ]
+    }
+  ]
+}
