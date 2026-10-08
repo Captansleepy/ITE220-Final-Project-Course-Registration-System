@@ -178,9 +178,9 @@ export default function StudentDashboard() {
           instructions.
         </p>
 
-        <a href="/add-drop-form.pdf">
-          Open Add/Drop Form
-        </a>
+        <p className="form-placeholder">
+          Add/Drop form link will be provided by the team.
+        </p>
       </section>
     </main>
   );
