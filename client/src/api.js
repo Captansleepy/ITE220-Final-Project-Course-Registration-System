@@ -3,7 +3,21 @@ const API_URL = (
 ).replace(/\/$/, "");
 
 export async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, options);
+  const token = localStorage.getItem("token");
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  });
 
   const data = await response.json().catch(() => null);
 
@@ -15,4 +29,18 @@ export async function apiRequest(path, options = {}) {
   }
 
   return data;
+}
+
+export async function login(email, password) {
+  return apiRequest("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+}
+
+export async function getCurrentUser() {
+  return apiRequest("/auth/me");
 }
