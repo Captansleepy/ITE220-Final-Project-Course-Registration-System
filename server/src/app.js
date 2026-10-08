@@ -1,3 +1,5 @@
+import User from "./models/User.js";
+import { createAuthRoutes } from "./routes/authRoutes.js";
 import express from "express";
 import cors from "cors";
 import healthRoutes from "./routes/healthRoutes.js";
@@ -13,6 +15,11 @@ app.use(
 app.use(express.json({ limit: "100kb" }));
 
 app.use("/api/health", healthRoutes);
+
+app.use(
+  "/api/auth",
+  createAuthRoutes(User, process.env.JWT_SECRET)
+);
 
 app.use((req, res) => {
   res.status(404).json({
