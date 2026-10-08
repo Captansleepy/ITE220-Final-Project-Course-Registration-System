@@ -1,108 +1,25 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import bcrypt from 'bcryptjs';
+import { ROLES, createToken, publicUser, authError } from '../utils/auth.js';
 
-function createToken(user) {
-  return jwt.sign(
-    { id: user._id.toString(), role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-}
-
-function formatUser(user) {
+// Accept the model as an argument so this can be tested before User.js exists.
+export function createAuthController(User, secret) {
   return {
-    id: user._id.toString(),
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    studentId: user.studentId,
-    advisor: user.advisor,
+    async login(req, res) {
+      const { email, password } = req.body || {};
+      if (typeof email !== 'string' || typeof password !== 'string' ||
+          email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
+          !password.length || Buffer.byteLength(password, 'utf8') > 72) {
+        return authError(res, 400, 'VALIDATION_ERROR', 'Enter a valid email and password.');
+      }
+      const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash');
+      if (!user || user.active !== true || !ROLES.includes(user.role) ||
+          typeof user.passwordHash !== 'string' || !await bcrypt.compare(password, user.passwordHash)) {
+        return authError(res, 401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
+      }
+      return res.json({ token: createToken(user, secret), user: publicUser(user) });
+    },
+    me(req, res) {
+      return res.json({ user: publicUser(req.user) });
+    },
   };
-}
-
-export async function login(req, res) {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        error: {
-          code: "INVALID_INPUT",
-          message: "Email and password are required.",
-        },
-      });
-    }
-
-    const user = await User.findOne({
-      email: email.trim().toLowerCase(),
-    }).select("+passwordHash");
-
-    if (!user || !user.active) {
-      return res.status(401).json({
-        error: {
-          code: "INVALID_CREDENTIALS",
-          message: "Invalid email or password.",
-        },
-      });
-    }
-
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
-    if (!passwordMatches) {
-      return res.status(401).json({
-        error: {
-          code: "INVALID_CREDENTIALS",
-          message: "Invalid email or password.",
-        },
-      });
-    }
-
-    const token = createToken(user);
-
-    return res.json({
-      token,
-      user: formatUser(user),
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-
-    return res.status(500).json({
-      error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected server error occurred.",
-      },
-    });
-  }
-}
-
-export async function me(req, res) {
-  try {
-    const user = await User.findById(req.user.id);
-
-    if (!user || !user.active) {
-      return res.status(401).json({
-        error: {
-          code: "UNAUTHORIZED",
-          message: "User session is no longer valid.",
-        },
-      });
-    }
-
-    return res.json({
-      user: formatUser(user),
-    });
-  } catch (error) {
-    console.error("Get current user error:", error);
-
-    return res.status(500).json({
-      error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected server error occurred.",
-      },
-    });
-  }
 }

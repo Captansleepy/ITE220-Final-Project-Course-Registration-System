@@ -1,34 +1,30 @@
-import jwt from "jsonwebtoken";
+import { ROLES, verifyToken, authError } from '../utils/auth.js';
 
-export function requireAuth(req, res, next) {
-  const authorization = req.headers.authorization;
+export function createRequireAuth(User, secret) {
+  return async function requireAuth(req, res, next) {
+    const match = /^Bearer ([^\s]+)$/i.exec(req.get('Authorization') || '');
+    if (!match) return authError(res, 401, 'UNAUTHORIZED', 'Sign in to continue.');
+    let payload;
+    try { payload = verifyToken(match[1], secret); }
+    catch { return authError(res, 401, 'UNAUTHORIZED', 'Your session is invalid or expired.'); }
 
-  if (!authorization?.startsWith("Bearer ")) {
-    return res.status(401).json({
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Authentication is required.",
-      },
-    });
-  }
-
-  const token = authorization.slice(7);
-
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = {
-      id: payload.id,
-      role: payload.role,
-    };
-
+    // Re-read the user so deactivation and role changes take effect immediately.
+    const user = await User.findById(payload.sub).select('-passwordHash');
+    if (!user || user.active !== true || !ROLES.includes(user.role)) {
+      return authError(res, 401, 'UNAUTHORIZED', 'Sign in to continue.');
+    }
+    req.user = user;
     next();
-  } catch {
-    return res.status(401).json({
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Invalid or expired token.",
-      },
-    });
+  };
+}
+
+export function requireRoles(...roles) {
+  if (!roles.length || roles.some(role => !ROLES.includes(role))) {
+    throw new Error('requireRoles needs at least one valid role.');
   }
+  return (req, res, next) => {
+    if (!req.user) return authError(res, 401, 'UNAUTHORIZED', 'Sign in to continue.');
+    if (!roles.includes(req.user.role)) return authError(res, 403, 'FORBIDDEN', 'You do not have permission to access this resource.');
+    next();
+  };
 }
