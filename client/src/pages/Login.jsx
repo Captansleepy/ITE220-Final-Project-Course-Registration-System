@@ -1,86 +1,81 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
-import ErrorMessage from "../components/ErrorMessage";
+import "./Login.css";
 
-function Login() {
+export default function Login() {
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
+    const newErrors = {};
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      newErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      newErrors.email = "Enter a valid email address.";
+    }
+    if (!password) newErrors.password = "Password is required.";
+    setErrors(newErrors);
+    setLoginError("");
+    if (Object.keys(newErrors).length > 0) return;
 
-    setError("");
     setLoading(true);
-
     try {
-      const data = await login(email, password);
-
+      const data = await login(normalizedEmail, password);
+      const role = data?.user?.role;
+      const destination = role === "student" ? "/student"
+        : role === "admin" ? "/admin"
+        : role === "advisor" ? "/advisor" : null;
+      if (!destination || typeof data?.token !== "string" || !data.token) {
+        throw new Error("The server returned an invalid login response.");
+      }
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (data.user.role === "student") {
-        navigate("/student");
-      } else if (data.user.role === "admin") {
-        navigate("/admin");
-      } else if (data.user.role === "advisor") {
-        navigate("/advisor");
-      } else {
-        setError("Unknown user role.");
-      }
-    } catch (err) {
-      setError(err.message || "Login failed.");
+      navigate(destination, { replace: true });
+    } catch (error) {
+      setLoginError(error.message || "Login failed.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="login-page">
-      <div className="login-card">
+    <main className="login-page">
+      <section className="login-card">
         <h1>Course Registration System</h1>
-        <h2>Login</h2>
-
-        <ErrorMessage message={error} />
-
-        <form onSubmit={handleSubmit}>
+        <p className="login-subtitle">Sign in to continue</p>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="email">Email</label>
-
-            <input
-              id="email"
-              type="email"
-              value={email}
+            <input id="email" type="email" value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="Enter your email"
-              required
-            />
+              placeholder="Enter your email" autoComplete="email"
+              disabled={loading} aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "email-error" : undefined} />
+            {errors.email && <p id="email-error" className="field-error">{errors.email}</p>}
           </div>
-
           <div className="form-group">
             <label htmlFor="password">Password</label>
-
-            <input
-              id="password"
-              type="password"
-              value={password}
+            <input id="password" type="password" value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-              required
-            />
+              placeholder="Enter your password" autoComplete="current-password"
+              disabled={loading} aria-invalid={Boolean(errors.password)}
+              aria-describedby={errors.password ? "password-error" : undefined} />
+            {errors.password && <p id="password-error" className="field-error">{errors.password}</p>}
           </div>
-
+          {loginError && <p className="login-error" role="alert">{loginError}</p>}
           <button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
-
-export default Login;
