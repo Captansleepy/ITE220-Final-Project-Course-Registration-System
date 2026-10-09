@@ -1,3 +1,5 @@
+import Record from "./models/Record.js";
+import { createAdvisorRoutes } from "./routes/advisorRoutes.js";
 import User from "./models/User.js";
 import Course from "./models/Course.js";
 import Offering from "./models/Offering.js";
@@ -29,6 +31,8 @@ app.use(
   "/api/admin",
   createAdminRoutes(User, Course, Offering, process.env.JWT_SECRET)
 );
+
+app.use("/api/advisor", createAdvisorRoutes(User, Record, process.env.JWT_SECRET));
 
 app.use((req, res) => {
   res.status(404).json({
