@@ -5,16 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { apiRequest } from "./api";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-function StudentDashboard() {
-  return (
-    <main>
-      <h1>Student Dashboard</h1>
-      <p>Welcome to the Student Dashboard.</p>
-    </main>
-  );
-}
 
 function App() {
   const [connection, setConnection] = useState({

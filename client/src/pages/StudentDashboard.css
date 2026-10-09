@@ -1,0 +1,143 @@
+.student-dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  color: #172033;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.dashboard-header h1 {
+  margin: 4px 0 8px;
+  font-size: 32px;
+}
+
+.sample-label {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #7a5a00;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-info-card,
+.summary-card,
+.dashboard-section {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 10px;
+}
+
+.student-info-card {
+  min-width: 220px;
+  padding: 18px;
+}
+
+.student-info-card span,
+.summary-card span {
+  display: block;
+  color: #667085;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.student-info-card strong,
+.summary-card strong {
+  font-size: 22px;
+}
+
+.dashboard-section {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.dashboard-section h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.summary-card {
+  max-width: 260px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.meeting-time + .meeting-time {
+  margin-top: 6px;
+}
+
+.history-group + .history-group {
+  margin-top: 24px;
+}
+
+.history-group h3 {
+  margin-bottom: 12px;
+}
+
+.add-drop-section p {
+  max-width: 760px;
+}
+
+.add-drop-section a {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.add-drop-section a:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 700px) {
+  .dashboard-header {
+    flex-direction: column;
+  }
+
+  .student-info-card {
+    width: 100%;
+  }
+
+  .student-dashboard {
+    padding: 20px 12px 36px;
+  }
+
+  .dashboard-section {
+    padding: 18px;
+  }
+}
