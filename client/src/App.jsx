@@ -1,7 +1,22 @@
+import AdvisorDashboard from "./pages/AdvisorDashboard";
 import { useEffect, useState } from "react";
-import { apiRequest } from "./api";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-export default function App() {
+import { apiRequest } from "./api";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+function StudentDashboard() {
+  return (
+    <main>
+      <h1>Student Dashboard</h1>
+      <p>Welcome to the Student Dashboard.</p>
+    </main>
+  );
+}
+
+function App() {
   const [connection, setConnection] = useState({
     loading: true,
     message: "",
@@ -43,12 +58,9 @@ export default function App() {
   }, []);
 
   return (
-    <main>
-      <h1>Course Registration System</h1>
-      <p>Application foundation</p>
-
+    <>
       {connection.loading && (
-        <p role="status">Checking API connection…</p>
+        <p role="status">Checking API connection...</p>
       )}
 
       {connection.message && (
@@ -60,6 +72,41 @@ export default function App() {
           Could not connect to the API: {connection.error}
         </p>
       )}
-    </main>
+
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute allowedRole="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/advisor"
+            element={
+              <ProtectedRoute allowedRole="advisor">
+                <AdvisorDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
+
+export default App;
