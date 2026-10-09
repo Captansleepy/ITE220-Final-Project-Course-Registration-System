@@ -1,98 +1,79 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiRequest } from "../api.js";
 
 function AdminDashboard() {
-const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [activeMenu, setActiveMenu] = useState("Dashboard");
+
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [courses, setCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState("");
+
+const [sections, setSections] = useState([]);
+const [sectionsLoading, setSectionsLoading] = useState(true);
+const [sectionsError, setSectionsError] = useState("");
+
+
+
+ useEffect(() => {
+    async function loadUsers() {
+      try {
+        const result = await apiRequest("/admin/users");
+        setUsers(result.users || []);
+      } catch (err) {
+        setError(err.message || "Failed to load users.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadUsers();
+  }, []);
+
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const result = await apiRequest("/admin/courses");
+        setCourses(result.courses || []);
+      } catch (err) {
+        setCoursesError(err.message || "Failed to load courses.");
+      } finally {
+        setCoursesLoading(false);
+      }
+    }
+
+    loadCourses();
+  }, []);
+
+
+useEffect(() => {
+  async function loadSections() {
+    try {
+      const result = await apiRequest("/admin/sections");
+      setSections(result.sections || []);
+    } catch (err) {
+      setSectionsError(err.message || "Failed to load sections.");
+    } finally {
+      setSectionsLoading(false);
+    }
+  }
+
+  loadSections();
+}, []);
 
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-const students = Array.from({ length: 25 }, (_, index) => {
-const number = String(index + 1).padStart(3, "0");
+const students = users.filter(
+  (item) => item.role === "student"
+);
 
-return {
-  studentId: "STU" + number,
-  name: "Student " + number,
-  email: "student" + number + "@example.test",
-  advisor: index < 13 ? "Wendy Lu" : "Zak",
-  status: "Active",
-};
+const advisors = users.filter(
+  (item) => item.role === "advisor"
+);
 
-
-});
-
-const advisors = [
-{
-id: "ADV001",
-name: "Wendy Lu",
-email: "[wendylu@gmail.com](mailto:wendylu@gmail.com)",
-students: 13,
-status: "Active",
-},
-{
-id: "ADV002",
-name: "Zak",
-email: "[zak@gmail.com](mailto:zak@gmail.com)",
-students: 12,
-status: "Active",
-},
-];
-
-const courses = [
-"CSC220",
-"CSC353",
-"ECO200",
-"ENG101",
-"ENG102",
-"ENG103",
-"GEO101",
-"HIS101",
-"ITE101",
-"ITE102",
-"ITE104",
-"ITE120",
-"ITE201",
-"ITE210",
-"ITE221",
-"ITE222",
-"ITE224",
-"ITE231",
-"ITE233",
-"ITE240",
-"ITE254",
-"ITE321",
-"ITE331",
-"ITE343",
-"ITE365",
-"ITE368",
-"ITE420",
-"ITE421",
-"ITE441",
-"ITE442",
-"ITE451",
-"ITE475",
-"ITE476",
-"ITE477",
-"ITE479",
-"MAT101",
-"MAT102",
-"MIS103",
-"PSY101",
-"PSY202",
-"SOC221",
-"STA101",
-"THA101",
-];
-
-const sections = [
-["CSC220", "1", "Demo Room 301", "Demo Instructor 01"],
-["ENG103", "1", "Demo Room 301", "Demo Instructor 02"],
-["ITE102", "1", "Demo Room 301", "Demo Instructor 03"],
-["ITE254", "1", "Demo Room 301", "Demo Instructor 04"],
-["ITE321", "1", "Demo Room 301", "Demo Instructor 05"],
-["ITE475", "1", "Demo Room 301", "Demo Instructor 06"],
-["MAT101", "1", "Demo Room 301", "Demo Instructor 07"],
-["STA101", "1", "Demo Room 301", "Demo Instructor 08"],
-["THA101", "1", "Demo Room 301", "Demo Instructor 09"],
-];
 
 const registrations = [
 {
@@ -167,55 +148,84 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
       </div>
     </header>
 
-    {activeMenu === "Dashboard" && (
-      <>
-        <section className="welcome-section">
-          <h2>Welcome, Administrator</h2>
-          <p>
-            Manage students, advisors, courses, sections, and
-            registrations from the admin panel.
-          </p>
-        </section>
 
-        <section className="dashboard-cards">
-          <div className="dashboard-card">
-            <span>Students</span>
-            <strong>25</strong>
-            <p>Registered students</p>
-          </div>
+{activeMenu === "Dashboard" && (
+  <section className="dashboard-panel">
+    <h2>Dashboard Overview</h2>
 
-          <div className="dashboard-card">
-            <span>Advisors</span>
-            <strong>2</strong>
-            <p>Active advisors</p>
-          </div>
+    <div className="dashboard-stats">
+      <div className="dashboard-panel">
+        <h3>Total Students</h3>
+        <p>{loading ? "Loading..." : students.length}</p>
+      </div>
 
-          <div className="dashboard-card">
-            <span>Courses</span>
-            <strong>43</strong>
-            <p>Available courses</p>
-          </div>
+      <div className="dashboard-panel">
+        <h3>Total Advisors</h3>
+        <p>{loading ? "Loading..." : advisors.length}</p>
+      </div>
 
-          <div className="dashboard-card">
-            <span>Sections</span>
-            <strong>9</strong>
-            <p>Course sections</p>
-          </div>
-        </section>
+      <div className="dashboard-panel">
+        <h3>Total Courses</h3>
+        <p>{coursesLoading ? "Loading..." : courses.length}</p>
+      </div>
 
-        <section className="dashboard-panel">
-          <h2>Recent Registrations</h2>
+      <div className="dashboard-panel">
+        <h3>Total Sections</h3>
+<p>{sectionsLoading ? "Loading..." : sections.length}</p>
+      </div>
+    </div>
+  </section>
+)}
 
-          <div className="empty-state">
-            <p>No registration data available yet.</p>
-            <span>
-              Registration data will appear here when connected to
-              the backend API.
-            </span>
-          </div>
-        </section>
-      </>
-    )}
+{activeMenu === "Courses" && (
+  <section className="dashboard-panel">
+    <h2>Courses</h2>
+
+    <div className="student-table-wrapper">
+      <table className="student-table">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Credits</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {coursesLoading && (
+            <tr>
+              <td colSpan="4">Loading courses...</td>
+            </tr>
+          )}
+
+          {!coursesLoading && coursesError && (
+            <tr>
+              <td colSpan="4">Unable to load courses: {coursesError}</td>
+            </tr>
+          )}
+
+          {!coursesLoading && !coursesError &&
+            courses.map((course) => (
+              <tr key={course.id}>
+                <td>{course.code}</td>
+                <td>{course.title}</td>
+                <td>{course.credits}</td>
+                <td>Available</td>
+              </tr>
+            ))}
+
+          {!coursesLoading && !coursesError &&
+            courses.length === 0 && (
+              <tr>
+                <td colSpan="4">No courses found.</td>
+              </tr>
+            )}
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}
 
     {activeMenu === "Students" && (
       <section className="dashboard-panel">
@@ -234,16 +244,34 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
             </thead>
 
             <tbody>
-              {students.map((student) => (
-                <tr key={student.studentId}>
-                  <td>{student.studentId}</td>
-                  <td>{student.name}</td>
-                  <td>{student.email}</td>
-                  <td>{student.advisor}</td>
-                  <td>{student.status}</td>
-                </tr>
-              ))}
-            </tbody>
+  {loading && (
+    <tr>
+      <td colSpan="5">Loading students...</td>
+    </tr>
+  )}
+
+  {!loading && error && (
+    <tr>
+      <td colSpan="5">Unable to load users: {error}</td>
+    </tr>
+  )}
+
+  {!loading && !error && students.map((student) => (
+    <tr key={student.id}>
+      <td>{student.studentId || "-"}</td>
+      <td>{student.name}</td>
+      <td>{student.email}</td>
+      <td>{student.advisor?.name || "Not assigned"}</td>
+      <td>{student.active ? "Active" : "Inactive"}</td>
+    </tr>
+  ))}
+
+  {!loading && !error && students.length === 0 && (
+    <tr>
+      <td colSpan="5">No students found.</td>
+    </tr>
+  )}
+</tbody>
           </table>
         </div>
       </section>
@@ -266,48 +294,27 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
         </thead>
 
         <tbody>
-          {advisors.map((advisor) => (
-           <tr key={advisor.id}>
-            <td>{advisor.id}</td>
-            <td>{advisor.name}</td>
-            <td>{advisor.email}</td>
-            <td>{advisor.students}</td>
-            <td>{advisor.status}</td>
-        </tr>
-          ))}
-        </tbody>
+  {advisors.map((advisor) => (
+    <tr key={advisor.id}>
+      <td>{advisor.id}</td>
+      <td>{advisor.name}</td>
+      <td>{advisor.email}</td>
+      <td>
+        {
+          students.filter(
+            (student) => student.advisor?.id === advisor.id
+          ).length
+        }
+      </td>
+      <td>{advisor.active ? "Active" : "Inactive"}</td>
+    </tr>
+  ))}
+</tbody>
       </table>
     </div>
   </section>
 )}
 
-{activeMenu === "Courses" && (
-  <section className="dashboard-panel">
-    <h2>Courses</h2>
-
-    <div className="student-table-wrapper">
-      <table className="student-table">
-        <thead>
-          <tr>
-            <th>Course Code</th>
-            <th>Credits</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {courses.map((course) => (
-            <tr key={course}>
-              <td>{course}</td>
-              <td>4</td>
-              <td>Available</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </section>
-)}
 
 {activeMenu === "Sections" && (
   <section className="dashboard-panel">
@@ -324,16 +331,39 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
           </tr>
         </thead>
 
-        <tbody>
-          {sections.map((section) => (
-            <tr key={section[0]}>
-              <td>{section[0]}</td>
-              <td>{section[1]}</td>
-              <td>{section[2]}</td>
-              <td>{section[3]}</td>
-            </tr>
-          ))}
-        </tbody>
+        
+<tbody>
+  {sectionsLoading && (
+    <tr>
+      <td colSpan="4">Loading sections...</td>
+    </tr>
+  )}
+
+  {!sectionsLoading && sectionsError && (
+    <tr>
+      <td colSpan="4">
+        Unable to load sections: {sectionsError}
+      </td>
+    </tr>
+  )}
+
+  {!sectionsLoading && !sectionsError &&
+    sections.map((section) => (
+      <tr key={section.id}>
+        <td>{section.courseCode}</td>
+        <td>{section.section}</td>
+        <td>{section.room}</td>
+        <td>{section.instructor}</td>
+      </tr>
+    ))}
+
+  {!sectionsLoading && !sectionsError &&
+    sections.length === 0 && (
+      <tr>
+        <td colSpan="4">No sections found.</td>
+      </tr>
+    )}
+</tbody>
       </table>
     </div>
   </section>

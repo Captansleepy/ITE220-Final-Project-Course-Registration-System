@@ -1,9 +1,12 @@
 import User from "./models/User.js";
+import Course from "./models/Course.js";
+import Offering from "./models/Offering.js";
 import { createAuthRoutes } from "./routes/authRoutes.js";
 import express from "express";
 import cors from "cors";
 import healthRoutes from "./routes/healthRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import { createAdminRoutes } from "./routes/adminRoutes.js";
+import Term from "./models/Term.js";
 
 const app = express();
 
@@ -16,11 +19,15 @@ app.use(
 app.use(express.json({ limit: "100kb" }));
 
 app.use("/api/health", healthRoutes);
-app.use("/api/auth", authRoutes);
 
 app.use(
   "/api/auth",
   createAuthRoutes(User, process.env.JWT_SECRET)
+);
+
+app.use(
+  "/api/admin",
+  createAdminRoutes(User, Course, Offering, process.env.JWT_SECRET)
 );
 
 app.use((req, res) => {
