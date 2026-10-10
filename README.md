@@ -357,26 +357,6 @@ Use an isolated development database and disposable accounts to verify:
 
 Cloud deployment is **optional**, not a required core function.
 
-## Screenshots (To Be Added Before Submission)
-
-Use **actual screenshots of the working application**, not placeholders presented as evidence. Add them to `docs/screenshots/`, then replace these entries with images:
-
-- **Admin Dashboard:** _Pending real screenshot._
-- **Advisor Dashboard:** _Pending real screenshot._
-- **Student Dashboard:** _Pending real screenshot._
-
-## Final Submission Checklist
-
-- [ ] The repository installs and runs using only the README instructions.
-- [ ] A separate test database can be seeded with `npm run seed`.
-- [ ] Admin, Advisor, and Student demo accounts work.
-- [ ] All rubric-required functions work with actual database data.
-- [ ] README includes group number, screenshots, and honest feature status.
-- [ ] One-page database relationship diagram is ready.
-- [ ] Group report (3–5 pages) explains data design, rules, contributions, and issues resolved.
-- [ ] Each student submits their own peer evaluation.
-- [ ] Repository link and required files are submitted to the LMS before its announced deadline.
-
 ## Academic Integrity and Acknowledgements
 
 This group project uses tutorials, libraries, and AI assistance where appropriate. AI-assisted implementation and documentation should be described honestly in the group report, together with how team members tested, reviewed, and understood the generated code. All members should be prepared to explain their own contribution in the live presentation.
