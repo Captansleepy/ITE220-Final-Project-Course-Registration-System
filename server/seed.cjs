@@ -141,8 +141,17 @@ async function importData(data, config) {
     const id = () => new mongoose.Types.ObjectId(), passwordHash = await bcrypt.hash(process.env.SEED_PASSWORD, 12);
     const users = [{ _id: id(), name: 'System Admin', email: 'admin@example.test', role: 'admin', active: true, passwordHash }];
     const advisorIds = new Map(), studentIds = new Map();
-    for (const a of data.advisors) { const _id = id(); advisorIds.set(a.email, _id); users.push({ _id, ...a, role: 'advisor', active: true, passwordHash }); }
-    for (const s of data.students) { const _id = id(); studentIds.set(s.studentId, _id); users.push({ _id, ...s, advisor: advisorIds.get(config.advisorAssignments[s.studentId]), role: 'student', active: true, passwordHash }); }
+    for (const [index, a] of data.advisors.entries()) {
+      const _id = id(), number = String(index + 1).padStart(3, '0');
+      advisorIds.set(a.email, _id);
+      users.push({ _id, name: `Demo Advisor ${number}`, email: `advisor${number}@example.test`, role: 'advisor', active: true, passwordHash });
+    }
+    for (const [index, s] of data.students.entries()) {
+      const _id = id(), number = String(index + 1).padStart(3, '0');
+      studentIds.set(s.studentId, _id);
+      users.push({ _id, name: `Demo Student ${number}`, email: `student${number}@example.test`, studentId: s.studentId,
+        advisor: advisorIds.get(config.advisorAssignments[s.studentId]), role: 'student', active: true, passwordHash });
+    }
     const courses = [...data.courses].map(([code, title]) => ({ _id: id(), code, title, credits: config.credits[code] }));
     const courseIds = new Map(courses.map(c => [c.code, c._id]));
     const terms = [...data.terms].sort().map(code => ({ _id: id(), code, isCurrent: code === currentTerm, isFinalised: code !== currentTerm }));

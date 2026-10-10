@@ -5,7 +5,7 @@
 A full-stack **MERN** web application for managing university student accounts, course offerings, registrations, academic records, and advisor-reviewed Add/Drop requests. The system has separate dashboards for **Administrators**, **Academic Advisors**, and **Students**.
 
 - **Repository:** https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System
-- **Status:** Implemented features are being reviewed in [PR #14](https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System/pull/14). Automated checks have passed; full manual/Atlas acceptance testing and submission deliverables still need verification.
+- **Status:** Core features are implemented. Dashboard screenshots and the database diagram are included below. Automated checks and an isolated Atlas acceptance command are provided; submission and presentation tasks are listed under Project Status.
 - **Submission deadline:** Confirm the official date and time on the LMS (the course brief does not give a fixed clock time).
 
 ## Team Members and Responsibilities
@@ -42,7 +42,7 @@ The team collaborates through Git branches and pull requests. Sham also implemen
 - Protect the current administrator from self-removal and check that at least one active administrator remains.
 - View course and section information.
 
-**Important:** The `DELETE /api/admin/users/:id` endpoint performs **deactivation**, not permanent physical deletion. This deliberately preserves registrations and academic records. Concurrent last-admin changes still require integration review.
+**Important:** The `DELETE /api/admin/users/:id` endpoint performs **deactivation**, not permanent physical deletion. This deliberately preserves registrations and academic records. Admin updates and deactivation share a transaction guard to protect the last active administrator.
 
 ### Academic Advisor — `/advisor`
 
@@ -79,7 +79,7 @@ The backend applies the registration rules for an advisor choosing a section:
 5. A new section cannot overlap the student's current timetable.
 6. A student cannot register twice for the same course in the same term, including a different section.
 
-Excluded offerings remain visible with reasons such as **Already passed**, **Full**, or **Clashes with CSC220 Section 2**. Register/drop operations use MongoDB transactions; the implemented test suite does not replace a full live concurrency test.
+Excluded offerings remain visible with reasons such as **Already passed**, **Full**, or **Clashes with CSC220 Section 2**. Register/drop operations use MongoDB transactions. The opt-in Atlas acceptance checks exercise two simultaneous registrations competing for one seat.
 
 ### Student Add/Drop Request Process
 
@@ -173,14 +173,14 @@ git clone https://github.com/Captansleepy/ITE220-Final-Project-Course-Registrati
 cd ITE220-Final-Project-Course-Registration-System
 ```
 
-**To test PR #14 before it is merged**, check out its branch:
+**To review the submission-readiness changes before merging**, check out the review branch:
 
 ```powershell
 git fetch origin
-git switch --track origin/feature/complete-rubric-functions
+git switch --track origin/fix/submission-readiness
 ```
 
-If the local branch already exists, use `git switch feature/complete-rubric-functions` followed by `git pull --ff-only origin feature/complete-rubric-functions`.
+If the local branch already exists, use `git switch fix/submission-readiness` followed by `git pull --ff-only origin fix/submission-readiness`.
 
 ### 2. Configure the backend
 
@@ -284,7 +284,7 @@ The seed imports `CSC220-Project-Info_final_1.xlsx` using `seed-config.json`.
 
 The **historical original seed** reported 25 students, 2 advisors, 1 admin, 43 courses, 10 terms, 9 current-term offerings, 237 grade records, and 13 registrations. These are **initial import counts**, not guaranteed current Atlas totals.
 
-The source data must be anonymized. Fresh-install reproducibility, reference consistency, and index alignment remain items for integration verification.
+The seed writes generated demo names and `example.test` emails for all users, while preserving invented student IDs and advisor assignments. The source workbook must also contain invented identities. Run `npm run test:integration` from `server` to verify a fresh seed, academic references, login, and persistence in a newly created isolated Atlas database.
 
 ## Demonstration Login Accounts
 
@@ -293,10 +293,12 @@ Use a **newly seeded test database** or disposable demo accounts. The seed appli
 | Role | Seeded username/email | Password |
 | --- | --- | --- |
 | Admin | `admin@example.test` | Your locally configured `SEED_PASSWORD` |
-| Advisor | Advisor email from the anonymized seed workbook | Your locally configured `SEED_PASSWORD` |
-| Student | Student email from the anonymized seed workbook | Your locally configured `SEED_PASSWORD` |
+| Advisor | `advisor001@example.test` | Your locally configured `SEED_PASSWORD` |
+| Student | `student001@example.test` | Your locally configured `SEED_PASSWORD` |
 
 > Before LMS submission, confirm the three demo accounts actually work. Provide the lecturer with valid **demo-only** credentials using an approved secure channel. Do not publish shared Atlas account passwords or real credentials in this public repository.
+
+These addresses apply to fresh imports with the current seed. Existing databases keep their existing accounts. Additional demo emails follow `advisor002@example.test` and `student002@example.test` through `student025@example.test`. No database login accounts are changed by updating the source code.
 
 ## Main REST API Routes
 
@@ -345,7 +347,19 @@ npm run lint --prefix client
 
 GitHub Actions also runs these checks for pull requests. A passing test suite and successful build are necessary checks but **do not guarantee** successful live Atlas transactions or correct behavior in every browser.
 
-### Safe manual test scenarios
+Validation of the submission-readiness changes: **38 backend tests passed**, frontend build and lint passed, seed preview passed, and **10 groups of live Atlas acceptance checks passed** in an isolated freshly seeded database. The live checks include password login for all three demo roles, persistence, academic rules, and simultaneous seat/admin requests. The Atlas run emits Mongoose deprecation warnings for existing `new: true` query options; these did not fail the checks. PDF fill/save and email-client behavior still require a human walkthrough.
+
+### Live Atlas acceptance checks
+
+From `server`, after configuring `MONGODB_URI` in `.env`:
+
+```powershell
+npm run test:integration
+```
+
+This opt-in command creates a new `course_registration_seed_<compact-timestamp><random-suffix>` database, seeds it, and checks real password login, roles, academic references, account/offering persistence, retakes, passed-course exclusions, full sections, clashes, seat counts, drop/re-registration, term finalisation, and Add/Drop status. It generates temporary test credentials internally and does not print them. It never writes to the configured `MONGODB_DB_NAME` or deletes a database. The isolated database is retained for inspection; it contains extra acceptance fixtures in addition to the seeded dataset. It requires Atlas access and permission to create the new database. This complements the unit tests and does not replace PDF/email-client or presentation checks.
+
+### Browser and paperwork checks
 
 Use an isolated development database and disposable accounts to verify:
 
@@ -365,16 +379,16 @@ Use an isolated development database and disposable accounts to verify:
 
 ## Project Status and Known Limitations
 
-| Area | Status on the feature branch | Remaining verification / work |
+| Area | Implementation / evidence | Remaining verification / work |
 | --- | --- | --- |
-| MongoDB models and seed | Implemented | Verify data anonymization, live references, and fresh seed |
-| Authentication and role authorization | Implemented and automated tests present | Final login/role regression |
-| Admin account management | Implemented with safe deactivation | Verify all roles and concurrent last-admin edge cases |
-| Advisor offering CRUD | Implemented with guarded operations | Verify against a separate Atlas dataset |
-| Eligibility, registration and dropping | Implemented; tests and earlier manual reports | Live edge cases and concurrent workload verification |
-| Advisor add/drop windows | Implemented | Verify deadline and persistence |
-| Student records and Add/Drop paperwork | Implemented | Final email-client/PDF/browser checks |
-| Documentation and submission | In progress | Group number, real dashboard screenshots, database diagram, report, peer evaluations |
+| MongoDB models and seed | Implemented; fresh seed/reference acceptance checks provided | Verify curriculum realism and source-workbook anonymization with the team |
+| Authentication and role authorization | Implemented; unit and real password/role acceptance checks provided | Give the marker valid demo credentials for the database they will use |
+| Admin account management | Implemented with safe deactivation, persistence and simultaneous last-admin acceptance checks | Final browser walkthrough |
+| Advisor offering CRUD | Implemented with guarded operations and persistence checks | Final browser walkthrough |
+| Eligibility, registration and dropping | Implemented; confirmation before registration; unit, live persistence and simultaneous seat acceptance checks provided | Final browser walkthrough |
+| Advisor add/drop windows | Implemented; live deadline/status acceptance checks provided | Verify the browser's deadline display |
+| Student records and Add/Drop paperwork | Implemented; screenshots and fillable PDF included | Fill/save/reopen the PDF and try the email link in the intended email client |
+| Documentation and submission | README, three screenshots and one-page database diagram included | Group report, individual peer evaluations, lecturer collaborators, LMS uploads and presentation preparation |
 
 Cloud deployment is **optional**, not a required core function.
 

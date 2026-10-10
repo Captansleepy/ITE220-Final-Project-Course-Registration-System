@@ -7,7 +7,8 @@
     "start": "node --env-file=.env src/server.js",
     "seed": "node --env-file=.env seed.cjs --apply",
     "seed:preview": "node --env-file=.env seed.cjs --preview",
-    "test": "node --test"
+    "test": "node --test",
+    "test:integration": "node --env-file=.env scripts/acceptance.mjs"
   },
   "keywords": [],
   "author": "",
