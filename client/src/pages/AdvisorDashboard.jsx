@@ -209,8 +209,14 @@ export default function AdvisorDashboard() {
     }
   }
 
-  async function handleDrop(registrationId) {
+        async function handleDrop(registrationId, courseLabel) {
     if (!selectedStudent || pendingAction) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to drop ${courseLabel}?`
+    );
+
+    if (!confirmed) return;
 
     const studentId = selectedStudent.id;
     setPendingAction(registrationId);
@@ -408,7 +414,13 @@ export default function AdvisorDashboard() {
                       <td>
                         <button
                           type="button"
-                          onClick={() => handleDrop(registration.id)}
+                          onClick={() =>
+                        handleDrop(
+                          registration.id,
+                          `${offering.courseCode} —
+                          ${offering.courseTitle}`
+                        )
+                      }
                           disabled={Boolean(pendingAction)}
                         >
                           {pendingAction === registration.id
