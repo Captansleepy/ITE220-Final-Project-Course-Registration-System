@@ -31,6 +31,10 @@ export function buildStudentDashboard(student, records, registrations) {
       id: String(registration._id), courseCode: offering.course.code,
       courseName: offering.course.title, credits: offering.course.credits,
       section: offering.section, term: offering.term.code,
+      instructor: offering.instructor,
+      addDropOpen: offering.addDropOpen === true && !offering.term.isFinalised &&
+        (!offering.addDropClosesAt || new Date(offering.addDropClosesAt).getTime() > Date.now()),
+      addDropClosesAt: offering.addDropClosesAt ?? null,
       meetings: offering.meetings.map(meeting => ({
         day: meeting.day, time: `${meeting.startTime} - ${meeting.endTime}`, room: offering.room,
       })),
@@ -47,7 +51,7 @@ export function buildStudentDashboard(student, records, registrations) {
   };
 }
 
-export function createStudentController(Record, Registration) {
+export function createStudentController(Record, Registration, User) {
   return {
     async dashboard(req, res) {
       // Identity comes only from the authenticated user, never from request parameters.
@@ -58,10 +62,14 @@ export function createStudentController(Record, Registration) {
         Registration.find({ student: req.user._id, status: "registered" })
           .populate({ path: "offering", populate: [
             { path: "course", select: "code title credits" },
-            { path: "term", select: "code isCurrent" },
+            { path: "term", select: "code isCurrent isFinalised" },
           ] }).lean(),
       ]);
-      return res.json(buildStudentDashboard(req.user, records, registrations));
+      const advisor = req.user.advisor ? await User.findOne({
+        _id: req.user.advisor, role: "advisor", active: true,
+      }).select("name email").lean() : null;
+      return res.json({ ...buildStudentDashboard(req.user, records, registrations),
+        advisor: advisor ? { name: advisor.name, email: advisor.email } : null });
     },
   };
 }

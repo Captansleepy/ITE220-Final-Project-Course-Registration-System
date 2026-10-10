@@ -14,8 +14,12 @@ const record = (id, grade, term = "2025-1") => ({ _id: `${id}-${grade}-${term}`,
 function query(value) { return { populate() { return this; }, lean: async () => value }; }
 async function fixture(t) {
   const users = { [first]: { ...student }, [second]: { ...student, _id: second, name: "Second", studentId: "STU002" } };
-  const state = { reads: [], fail: false };
-  const User = { findById: id => ({ select: async () => users[id] }) };
+  const state = { reads: [], fail: false, advisor: null, advisorReads: [] };
+  users[first].advisor = "333333333333333333333333";
+  const User = {
+    findById: id => ({ select: async () => users[id] }),
+    findOne: filter => { state.advisorReads.push(filter); return { select() { return this; }, lean: async () => state.advisor }; },
+  };
   const Record = { find(filter) {
     state.reads.push(["records", filter]);
     if (state.fail) throw new Error("Database unavailable");
@@ -93,4 +97,30 @@ test("broken references and database errors do not turn into sample or empty suc
   const { request, state } = await fixture(t);
   state.fail = true;
   assert.equal((await request()).status, 500);
+});
+
+test("advisor contact is scoped to student's assignment and exposes only name and email", async t => {
+  const { request, state } = await fixture(t);
+  state.advisor = { name: "Assigned Advisor", email: "advisor@example.test", passwordHash: "secret", role: "advisor" };
+  const response = await request(first, "?advisor=someone-else");
+  const data = await response.json();
+  assert.deepEqual(data.advisor, { name: "Assigned Advisor", email: "advisor@example.test" });
+  assert.deepEqual(state.advisorReads, [{ _id: "333333333333333333333333", role: "advisor", active: true }]);
+  state.advisor = null;
+  assert.equal((await (await request()).json()).advisor, null);
+});
+test("student add/drop status uses stored flag, closing date and term finalisation", () => {
+  const registration = (changes = {}, termChanges = {}) => ({ _id: "registration", status: "registered", offering: {
+    course: course("CSC220"), term: { code: "2026-1", isCurrent: true, ...termChanges },
+    section: 1, room: "A", instructor: "Teacher", meetings: [], addDropOpen: true, ...changes,
+  } });
+  const view = r => buildStudentDashboard(student, [], [r]).registrations[0];
+  assert.equal(view(registration()).addDropOpen, true);
+  assert.equal(view(registration()).addDropClosesAt, null);
+  assert.equal(view(registration({ addDropOpen: false })).addDropOpen, false);
+  assert.equal(view(registration({ addDropClosesAt: new Date("2000-01-01") })).addDropOpen, false);
+  assert.equal(view(registration({}, { isFinalised: true })).addDropOpen, false);
+  const future = view(registration({ addDropClosesAt: new Date("2099-01-01") }));
+  assert.equal(future.addDropOpen, true);
+  assert.equal(future.instructor, "Teacher");
 });
