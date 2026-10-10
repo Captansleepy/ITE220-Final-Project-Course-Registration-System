@@ -4,7 +4,10 @@
   "description": "",
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.js",
-    "start": "node --env-file=.env src/server.js"
+    "start": "node --env-file=.env src/server.js",
+    "seed": "node --env-file=.env seed.cjs --apply",
+    "seed:preview": "node --env-file=.env seed.cjs --preview",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

@@ -18,6 +18,7 @@ export function createAdminRoutes(User, Course, Offering, secret) {
   router.get("/courses", controller.listCourses);
   router.post("/users", controller.createUser);
   router.patch("/users/:id", controller.updateUser);
+  router.delete("/users/:id", controller.deleteUser);
 
   return router;
 }

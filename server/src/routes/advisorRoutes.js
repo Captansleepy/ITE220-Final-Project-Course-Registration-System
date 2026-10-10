@@ -1,4 +1,5 @@
 import { createRegistrationController } from "../controllers/registrationController.js";
+import { createOfferingController } from "../controllers/offeringController.js";
 import { Router } from "express";
 import { createAdvisorController } from "../controllers/advisorController.js";
 import { createRequireAuth, requireRoles } from "../middleware/authMiddleware.js";
@@ -12,6 +13,14 @@ export function createAdvisorRoutes(User, Record, secret, registrationModels) {
   router.get("/students/:id/history", controller.history);
   if (registrationModels) {
     const registration = createRegistrationController({ User, Record, ...registrationModels });
+    if (registrationModels.Course) {
+      const offerings = createOfferingController(registrationModels);
+      router.get("/catalog", offerings.catalog);
+      router.get("/offerings", offerings.list);
+      router.post("/offerings", offerings.create);
+      router.patch("/offerings/:offeringId", offerings.update);
+      router.delete("/offerings/:offeringId", offerings.remove);
+    }
     router.patch("/offerings/:offeringId/add-drop", registration.window);
     router.get("/students/:id/registrations", registration.list);
     router.get("/students/:id/offerings", registration.offerings);

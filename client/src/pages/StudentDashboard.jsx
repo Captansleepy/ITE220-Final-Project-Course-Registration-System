@@ -75,7 +75,7 @@ export default function StudentDashboard() {
       <section className="dashboard-section">
         <h2>Outstanding Failed Courses</h2>
         {data.outstandingFailures.length === 0 ? <p>No outstanding failed courses.</p> :
-          <ul>{data.outstandingFailures.map(course => <li key={course.id}>{course.courseCode} — {course.courseName}</li>)}</ul>}
+          <ul>{data.outstandingFailures.map(course => <li key={course.id}>{course.courseCode} — {course.courseName} <strong>(Retake required)</strong></li>)}</ul>}
       </section>
       <section className="dashboard-section">
         <h2>Current Registrations</h2>

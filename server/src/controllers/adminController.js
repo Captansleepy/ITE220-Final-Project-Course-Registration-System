@@ -2,6 +2,7 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { publicUser, authError } from "../utils/auth.js";
+import { withAdminMutationLock, AdminMutationError, assertAdminRemovalAllowed } from "../utils/adminMutationLock.js";
 
 const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validRoles = ["admin", "advisor", "student"];
@@ -18,6 +19,9 @@ function sendUser(res, user, status = 200) {
 }
 
 function handleError(res, error) {
+  if (error instanceof AdminMutationError) {
+    return authError(res, error.status, error.code, error.message);
+  }
   if (error?.code === 11000) {
     return authError(
       res, 409, "DUPLICATE_VALUE",
@@ -240,6 +244,41 @@ export function createAdminController(User, Course, Offering) {
       }
     },
 
+    // Soft deletion preserves academic and advisor references.
+    // All admin account writes share a transaction-serialized guard.
+    async deleteUser(req, res) {
+      try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+          return authError(res, 400, "INVALID_ID", "Invalid user ID.");
+        }
+        if (String(req.params.id) === String(req.user._id)) {
+          return authError(res, 400, "SELF_DELETE_RESTRICTED", "You cannot delete your own account.");
+        }
+
+        const user = await withAdminMutationLock(async (session) => {
+          const target = await User.findById(req.params.id).session(session);
+          if (!target) {
+            throw new AdminMutationError("USER_NOT_FOUND", "User not found.", 404);
+          }
+          await assertAdminRemovalAllowed(User, target,
+            { role: target.role, active: false }, session);
+
+          target.active = false;
+          await target.save({ session });
+          return target;
+        });
+
+        return res.json({
+          deleted: false,
+          deactivated: true,
+          user: { ...publicUser(user), active: false },
+          message: "Account deactivated to preserve academic records and references.",
+        });
+      } catch (error) {
+        return handleError(res, error);
+      }
+    },
+
     async updateUser(req, res) {
       try {
         if (!mongoose.isValidObjectId(req.params.id)) {
@@ -256,6 +295,10 @@ export function createAdminController(User, Course, Offering) {
             res, 404, "USER_NOT_FOUND", "User not found."
           );
         }
+
+        const originalRole = user.role;
+        const originalActive = user.active;
+        const originalUpdatedAt = user.updatedAt?.getTime() ?? null;
 
         const body = req.body || {};
         const allowed = [
@@ -327,20 +370,6 @@ export function createAdminController(User, Course, Offering) {
             );
           }
 
-          if (body.active === false && user.role === "admin") {
-            const activeAdmins = await User.countDocuments({
-              role: "admin",
-              active: true,
-            });
-
-            if (activeAdmins <= 1) {
-              return authError(
-                res, 400, "LAST_ADMIN",
-                "The last active admin cannot be deactivated."
-              );
-            }
-          }
-
           user.active = body.active;
         }
 
@@ -401,7 +430,25 @@ export function createAdminController(User, Course, Offering) {
           user.advisor = undefined;
         }
 
-        await user.save();
+        // All edit paths (including role demotion and status changes) use
+        // the same database lock as DELETE. Recheck inside the transaction
+        // so concurrent requests can never both remove the last admin.
+        await withAdminMutationLock(async (session) => {
+          const latest = await User.findById(user._id).session(session);
+          if (!latest) {
+            throw new AdminMutationError("USER_NOT_FOUND", "User not found.", 404);
+          }
+          const latestUpdatedAt = latest.updatedAt?.getTime() ?? null;
+          if (latest.role !== originalRole ||
+              latest.active !== originalActive ||
+              latestUpdatedAt !== originalUpdatedAt) {
+            throw new AdminMutationError("ACCOUNT_CHANGED",
+              "This account changed while you were editing it. Refresh and try again.");
+          }
+          await assertAdminRemovalAllowed(User, latest,
+            { role: user.role, active: user.active }, session);
+          await user.save({ session });
+        });
         return sendUser(res, user);
       } catch (error) {
         return handleError(res, error);

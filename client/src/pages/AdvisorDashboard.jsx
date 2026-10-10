@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
+import OfferingManagement from "../components/OfferingManagement.jsx";
 
 const emptyRegistrationData = {
   registrations: [],
@@ -293,6 +294,9 @@ export default function AdvisorDashboard() {
         </div>
       </header>
 
+      <OfferingManagement onChanged={() => {
+        if (selectedStudent) void refreshRegistrationData(selectedStudent.id).catch(error => setActionError(error.message));
+      }} />
       <section className="dashboard-panel">
         <h2>My Students</h2>
 
@@ -521,7 +525,7 @@ export default function AdvisorDashboard() {
                             : offering.reason || "Registration unavailable"}
                         </td>
                         <td>
-                          <p>{offering.addDropOpen ? "Open flag" : "Closed"}</p>
+                          <p>{offering.addDropOpen && (!offering.addDropClosesAt || new Date(offering.addDropClosesAt).getTime() > Date.now()) ? "Open" : "Closed"}</p>
                           <p>{offering.addDropClosesAt ? `Closes: ${new Intl.DateTimeFormat("en-GB", {
                             dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok",
                           }).format(new Date(offering.addDropClosesAt))} (Bangkok)` : "Closing date not set"}</p>
