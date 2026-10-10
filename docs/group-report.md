@@ -72,7 +72,7 @@ All five members completed their assigned responsibilities. After finishing thei
 | Member | Student ID | Main responsibility |
 | --- | --- | --- |
 | Rachaphon Bhetcharut | 2306020001 | Team lead: repository, reviews, merging, integration, delivery. |
-| Sham Bahadu | 230710005 | Backend API, authentication, validation, registration rules, integration; final Add/Drop flow and window controls. |
+| Sham Bahadu | 2307100005 | Backend API, authentication, validation, registration rules, integration; final Add/Drop flow and window controls. |
 | Panruethai Thubthimthong | 2303080018 | Database models, dataset, seeding, and relationships. |
 | Hathairat Deesrisuk | 2105110008 | Admin and Advisor interfaces. |
 | Trithep Sik | 2406100007 | Login, Student interface, and shared components. |

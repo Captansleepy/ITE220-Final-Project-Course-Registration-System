@@ -13,7 +13,7 @@ A full-stack **MERN** web application for managing university student accounts, 
 | Team member | Student ID | Project role | Main responsibility |
 | --- | --- | --- | --- |
 | Rachaphon Bhetcharut | 2306020001 | Team Lead / Integrator | GitHub repository, code reviews, merging, integration, final delivery |
-| Sham Bahadu | 230710005 | Backend Developer | Express API, JWT authentication, validation, registration rules, integration |
+| Sham Bahadu | 2307100005 | Backend Developer | Express API, JWT authentication, validation, registration rules, integration |
 | Panruethai Thubthimthong | 2303080018 | Database & Data Lead | Mongoose models, anonymized dataset, seed script, MongoDB relationships |
 | Hathairat Deesrisuk | 2105110008 | Frontend A | Admin and Advisor dashboards |
 | Trithep Sik | 2406100007 | Frontend B | Login, Student dashboard, shared frontend components |
