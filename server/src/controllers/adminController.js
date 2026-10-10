@@ -240,6 +240,41 @@ export function createAdminController(User, Course, Offering) {
       }
     },
 
+    // Safe deletion: preserve grade and registration history by deactivating users
+    // who are referenced by academic records or assigned students.
+    async deleteUser(req, res) {
+      try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+          return authError(res, 400, "INVALID_ID", "Invalid user ID.");
+        }
+        if (String(req.params.id) === String(req.user._id)) {
+          return authError(res, 400, "SELF_DELETE_RESTRICTED", "You cannot delete your own account.");
+        }
+        const user = await User.findById(req.params.id);
+        if (!user) return authError(res, 404, "USER_NOT_FOUND", "User not found.");
+
+        // An admin must never lose the last active administrator. Use a
+        // single atomic predicate as a second safety check at the write.
+        if (user.role === "admin") {
+          const count = await User.countDocuments({ role: "admin", active: true });
+          if (count <= 1) return authError(res, 409, "LAST_ADMIN", "The last active admin cannot be deleted.");
+        }
+
+        // Never hard-delete an account that other collections might reference.
+        // Inactivation is also required for advisor accounts with assignments.
+        user.active = false;
+        await user.save();
+        return res.json({
+          deleted: false,
+          deactivated: true,
+          user: { ...publicUser(user), active: false },
+          message: "Account deactivated to preserve academic records and references.",
+        });
+      } catch (error) {
+        return handleError(res, error);
+      }
+    },
+
     async updateUser(req, res) {
       try {
         if (!mongoose.isValidObjectId(req.params.id)) {
