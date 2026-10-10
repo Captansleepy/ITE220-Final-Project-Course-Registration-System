@@ -5,7 +5,6 @@
 A full-stack **MERN** web application for managing university student accounts, course offerings, registrations, academic records, and advisor-reviewed Add/Drop requests. The system has separate dashboards for **Administrators**, **Academic Advisors**, and **Students**.
 
 - **Repository:** https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System
-- **Group number:** _Add the official group number from the LMS._
 - **Status:** Implemented features are being reviewed in [PR #14](https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System/pull/14). Automated checks have passed; full manual/Atlas acceptance testing and submission deliverables still need verification.
 - **Submission deadline:** Confirm the official date and time on the LMS (the course brief does not give a fixed clock time).
 
@@ -101,6 +100,28 @@ Add/Drop Request - <Student ID> - <Course Code>
 The **Email advisor** link prepares the address and subject using the student's email application. The student must attach the completed PDF themselves; no automatic outgoing email is sent.
 
 Form path: [`client/public/forms/add-drop-request.pdf`](client/public/forms/add-drop-request.pdf). Additional instructions: [`docs/student-add-drop.md`](docs/student-add-drop.md).
+
+## Dashboard Screenshots
+
+Screenshots captured from the running application. Names and email addresses are anonymized for documentation.
+
+### Administrator
+
+![Administrator dashboard](docs/screenshots/admin-dashboard.png)
+
+### Academic Advisor
+
+![Academic Advisor dashboard](docs/screenshots/advisor-dashboard.png)
+
+### Student
+
+![Student dashboard](docs/screenshots/student-dashboard.png)
+
+## Database Design Diagram
+
+![Database collections, fields and relationships](docs/database-diagram.svg)
+
+[Download the one-page database diagram (PDF)](docs/database-diagram.pdf) · [Open printable diagram](docs/database-diagram.html)
 
 ## Repository Structure
 
