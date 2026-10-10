@@ -18,7 +18,7 @@ A full-stack **MERN** web application for managing university student accounts, 
 | Hathairat Deesrisuk | 2105110008 | Frontend A | Admin and Advisor dashboards |
 | Trithep Sik | 2406100007 | Frontend B | Login, Student dashboard, shared frontend components |
 
-The team collaborates through Git branches and pull requests. Sham also implemented the final student Add/Drop request flow and advisor window controls.
+All five members completed their assigned responsibilities and helped teammates after finishing their tasks or whenever they had time available. The team collaborates through Git branches and pull requests. Rachaphon is the main tester, and Sham also tests the complete application before merging changes. Sham also implemented the final student Add/Drop request flow and advisor window controls.
 
 ## Technology Stack
 
@@ -288,17 +288,17 @@ The seed writes generated demo names and `example.test` emails for all users, wh
 
 ## Demonstration Login Accounts
 
-Use a **newly seeded test database** or disposable demo accounts. The seed applies the locally configured `SEED_PASSWORD` to its accounts.
+The following demo accounts are provided for testing the existing demonstration database. The email addresses are fictitious test identities.
 
-| Role | Seeded username/email | Password |
+| Role | Demo login email | Password |
 | --- | --- | --- |
-| Admin | `admin@example.test` | Your locally configured `SEED_PASSWORD` |
-| Advisor | `advisor001@example.test` | Your locally configured `SEED_PASSWORD` |
-| Student | `student001@example.test` | Your locally configured `SEED_PASSWORD` |
+| Admin | `admin@example.test` | `Password1234` |
+| Advisor | `wendylu@gmail.com` | `Password1234` |
+| Student | `Daniel@gmail.com` | `Password1234` |
 
-> Before LMS submission, confirm the three demo accounts actually work. Provide the lecturer with valid **demo-only** credentials using an approved secure channel. Do not publish shared Atlas account passwords or real credentials in this public repository.
+These are demo-only application credentials. The email link can be checked for its address and subject, but these fictitious accounts do not provide real advisor email delivery.
 
-These addresses apply to fresh imports with the current seed. Existing databases keep their existing accounts. Additional demo emails follow `advisor002@example.test` and `student002@example.test` through `student025@example.test`. No database login accounts are changed by updating the source code.
+Fresh imports use `admin@example.test`, `advisor001@example.test`, and `student001@example.test` with the locally configured `SEED_PASSWORD`. Additional seeded emails follow `advisor002@example.test` and `student002@example.test` through `student025@example.test`. The credentials above refer to the existing demo database; editing this README does not change database accounts or the seed configuration.
 
 ## Main REST API Routes
 
@@ -347,7 +347,7 @@ npm run lint --prefix client
 
 GitHub Actions also runs these checks for pull requests. A passing test suite and successful build are necessary checks but **do not guarantee** successful live Atlas transactions or correct behavior in every browser.
 
-Validation of the submission-readiness changes: **38 backend tests passed**, frontend build and lint passed, seed preview passed, and **10 groups of live Atlas acceptance checks passed** in an isolated freshly seeded database. The live checks include password login for all three demo roles, persistence, academic rules, and simultaneous seat/admin requests. The Atlas run emits Mongoose deprecation warnings for existing `new: true` query options; these did not fail the checks. PDF fill/save and email-client behavior still require a human walkthrough.
+Validation of the submission-readiness changes: **38 backend tests passed**, frontend build and lint passed, seed preview passed, and **10 groups of live Atlas acceptance checks passed** in an isolated freshly seeded database. The live checks include password login for all three demo roles, persistence, academic rules, and simultaneous seat/admin requests. The Atlas run emits Mongoose deprecation warnings for existing `new: true` query options; these did not fail the checks. The team has completed the manual browser, PDF fill/save/reopen, and email-link address/subject checks. Rachaphon led testing, with Sham also testing the complete application before merges.
 
 ### Live Atlas acceptance checks
 
@@ -361,7 +361,7 @@ This opt-in command creates a new `course_registration_seed_<compact-timestamp><
 
 ### Browser and paperwork checks
 
-Use an isolated development database and disposable accounts to verify:
+The team completed the following checks. For repeat testing, use an isolated development database and disposable accounts:
 
 - Log in as all three roles and confirm frontend and backend role restrictions.
 - Create/edit/deactivate a disposable account; verify persistence and last-admin restrictions.
@@ -379,16 +379,16 @@ Use an isolated development database and disposable accounts to verify:
 
 ## Project Status and Known Limitations
 
-| Area | Implementation / evidence | Remaining verification / work |
+| Area | Implementation / evidence | Verification / submission status |
 | --- | --- | --- |
 | MongoDB models and seed | Implemented; fresh seed/reference acceptance checks provided | Verify curriculum realism and source-workbook anonymization with the team |
-| Authentication and role authorization | Implemented; unit and real password/role acceptance checks provided | Give the marker valid demo credentials for the database they will use |
-| Admin account management | Implemented with safe deactivation, persistence and simultaneous last-admin acceptance checks | Final browser walkthrough |
-| Advisor offering CRUD | Implemented with guarded operations and persistence checks | Final browser walkthrough |
-| Eligibility, registration and dropping | Implemented; confirmation before registration; unit, live persistence and simultaneous seat acceptance checks provided | Final browser walkthrough |
-| Advisor add/drop windows | Implemented; live deadline/status acceptance checks provided | Verify the browser's deadline display |
-| Student records and Add/Drop paperwork | Implemented; screenshots and fillable PDF included | Fill/save/reopen the PDF and try the email link in the intended email client |
-| Documentation and submission | README, three screenshots and one-page database diagram included | Group report, individual peer evaluations, lecturer collaborators, LMS uploads and presentation preparation |
+| Authentication and role authorization | Implemented; unit and real password/role acceptance checks provided | Manual checks completed; demo credentials listed above |
+| Admin account management | Implemented with safe deactivation, persistence and simultaneous last-admin acceptance checks | Browser walkthrough completed |
+| Advisor offering CRUD | Implemented with guarded operations and persistence checks | Browser walkthrough completed |
+| Eligibility, registration and dropping | Implemented; confirmation before registration; unit, live persistence and simultaneous seat acceptance checks provided | Browser walkthrough completed |
+| Advisor add/drop windows | Implemented; live deadline/status acceptance checks provided | Browser status and deadline display checked |
+| Student records and Add/Drop paperwork | Implemented; screenshots and fillable PDF included | PDF fill/save/reopen and email-link address/subject checked |
+| Documentation and submission | README, group report, three screenshots and one-page database diagram included | Lecturer GitHub access confirmed; presentation handled outside Git; individual peer evaluations and LMS upload status tracked separately |
 
 Cloud deployment is **optional**, not a required core function.
 

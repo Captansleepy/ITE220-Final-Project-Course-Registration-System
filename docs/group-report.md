@@ -67,7 +67,7 @@ Students also see completed records grouped by term, full current section detail
 <!-- page -->
 
 ### 6. Division of work and collaboration
-The division of work follows the responsibilities recorded in the project README. Git history contains contributions attributed to all five members. The role allocation identifies each member's principal area rather than restricting collaboration to that area.
+All five members completed their assigned responsibilities. After finishing their own tasks, or whenever they had time available, members helped each other with implementation, debugging, and integration. This cooperation supported the completion of the project across the frontend, backend, and database.
 
 | Member | Student ID | Main responsibility |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ The division of work follows the responsibilities recorded in the project README
 | Hathairat Deesrisuk | 2105110008 | Admin and Advisor interfaces. |
 | Trithep Sik | 2406100007 | Login, Student interface, and shared components. |
 
-Feature branches and pull requests provide review before changes reach main. Screenshots and the database diagram were merged through pull request #16. Registration confirmation, demo seed accounts, README improvements, and the isolated acceptance script were merged through pull request #17. This workflow allows changes and their validation evidence to be examined before integration.
+The team used feature branches and pull requests to integrate its work. Rachaphon, the team leader, served as the main tester. Sham, the backend developer, also tested the complete application before changes were merged. They checked the combined frontend, API, and database behavior and worked with the responsible members to resolve issues before merging.
 
 ### 7. Technical problems and solutions
 The implementation addresses several technical risks. Simultaneous registration requests could otherwise overfill a section or bypass timetable checks; transactions and the shared term revision serialize them. Simultaneous administrator changes could leave no active administrator; updates and deactivation use a shared database guard and recheck the remaining administrator count inside the transaction.
@@ -91,12 +91,12 @@ During isolated acceptance testing, an overly long generated database name was r
 ### 8. Testing and evaluation
 Recorded verification passed 38 backend tests, the frontend production build, lint, and seed preview. Ten groups of live Atlas acceptance checks also passed after a fresh isolated seed. They covered reference consistency; real password login and roles; persistent account/offering changes; retakes and academic summaries; full, passed, and clashing registrations; Add/Drop status; dropping and re-registration; finalized-term restrictions; inactive login; simultaneous one-seat requests; and simultaneous administrator deactivation.
 
-These results verify the exercised cases, not every possible workload or browser. Mongoose emitted deprecation warnings for existing `new: true` query options without failing the checks. The application includes a fillable PDF and a mailto link, but PDF fill/save compatibility and email-client behavior were not independently verified by the automated checks. Lecturer repository access and LMS submission are administrative requirements outside the application test results. Public deployment is optional and is not claimed here.
+Rachaphon led testing, with Sham also testing the complete application before merges. The team completed all manual checks: login and role restrictions; account and offering management; eligibility explanations; registration, dropping, and seat counts; academic history and earned credits; Add/Drop windows and deadline display; and the student request workflow. The PDF was downloaded, filled, saved, and reopened, and the email link's advisor address and subject were checked. Demo email addresses are fictitious, so the email check verified the request setup rather than delivery to a real advisor. The lecturer has GitHub repository access, and presentation preparation is handled outside the repository.
 
 ### 9. Academic integrity and AI assistance
 Codex AI assistance was used to inspect requirements and code, create this report and other documentation, generate the database diagram, capture anonymized dashboard screenshots, add registration confirmation, update demo seeding, and implement and run acceptance checks. Verification consisted of the executed backend tests, frontend build and lint, seed preview, and real Atlas acceptance checks described above.
 
-The reported roles are taken from the repository documentation, and the test results are recorded execution evidence. This report does not claim that every team member independently executed every test or that automated testing establishes individual understanding. Members remain responsible for explaining their contributions and reviewing AI-assisted work.
+All members completed their assigned work and supported teammates when available. The team leader and backend developer led application testing and checked changes before merging. Team members reviewed AI-assisted work and remain responsible for explaining their contributions during the presentation.
 
 ### 10. Supporting materials and sources
 The implementation is supported by three dashboard screenshots, the one-page database diagram, a fillable Add/Drop form, setup instructions, the seed script, and automated and live acceptance checks. Together, these provide reproducible evidence of the implemented academic workflow.
