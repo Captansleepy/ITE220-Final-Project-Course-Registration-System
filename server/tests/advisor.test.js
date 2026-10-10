@@ -36,7 +36,7 @@ async function fixture(t) {
     }]);
   } };
   const app = express();
-  app.use("/api/advisor", createAdvisorRoutes(User, Record, secret));
+  app.use("/api/advisor", createAdvisorRoutes(User, Record, secret, {}));
   app.use((_error, _req, res, _next) => res.status(500).json({ error: { message: "Unable to load data" } }));
   const server = app.listen(0, "127.0.0.1");
   await new Promise(resolve => server.once("listening", resolve));
@@ -80,7 +80,7 @@ test("unassigned, missing, malformed IDs never read records", async t => {
 });
 test("missing token, wrong roles and deactivated advisors are denied", async t => {
   const { state, request } = await fixture(t);
-  for (const path of ["/students", `/students/${firstId}/history`]) {
+  for (const path of ["/students", `/students/${firstId}/history`, `/students/${firstId}/offerings`, `/students/${firstId}/registrations`]) {
     assert.equal((await request(path, false)).status, 401);
     for (const role of ["student", "admin"]) {
       state.user.role = role;
