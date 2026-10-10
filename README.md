@@ -6,7 +6,7 @@ A full-stack **MERN** web application for managing university student accounts, 
 
 - **Repository:** https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System
 - **Status:** Core features are implemented. Dashboard screenshots and the database diagram are included below. Automated checks and an isolated Atlas acceptance command are provided; submission and presentation tasks are listed under Project Status.
-- **Submission deadline:** Confirm the official date and time on the LMS (the course brief does not give a fixed clock time).
+- **Submission deadline:** 10/11/26, 11:59 PM.
 
 ## Team Members and Responsibilities
 
