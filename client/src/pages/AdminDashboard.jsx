@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
+import AccountManagement from "../components/AccountManagement.jsx";
 
 function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -191,37 +192,15 @@ const advisors = users.filter(
 );
 
 
-const registrations = [
-{
-id: "REG001",
-studentId: "STU001",
-course: "CSC220",
-section: "1",
-status: "Registered",
-},
-{
-id: "REG002",
-studentId: "STU002",
-course: "ENG103",
-section: "1",
-status: "Registered",
-},
-{
-id: "REG003",
-studentId: "STU003",
-course: "ITE102",
-section: "1",
-status: "Registered",
-},
-];
+const registrations = [];
 
 const menuItems = [
 "Dashboard",
+"Accounts",
 "Students",
 "Advisors",
 "Courses",
 "Sections",
-"Registrations",
 ];
 
 function handleLogout() {
@@ -266,6 +245,8 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
       </div>
     </header>
 
+
+{activeMenu === "Accounts" && <AccountManagement />}
 
 {activeMenu === "Dashboard" && (
   <section className="dashboard-panel">

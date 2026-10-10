@@ -300,3 +300,21 @@ body {
 .dashboard-panel button:hover {
   background: #f3f4f6;
 }
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.management-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+}
+.management-grid input,
+.management-grid select,
+.dashboard-panel select {
+  max-width: 100%;
+  min-width: 0;
+  padding: 7px;
+}
