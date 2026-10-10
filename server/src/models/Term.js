@@ -11,6 +11,7 @@ const termSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  registrationRevision: { type: Number, default: 0 },
   isFinalised: {
     type: Boolean,
     default: false
