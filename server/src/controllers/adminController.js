@@ -253,9 +253,9 @@ export function createAdminController(User, Course, Offering) {
         const user = await User.findById(req.params.id);
         if (!user) return authError(res, 404, "USER_NOT_FOUND", "User not found.");
 
-        // An admin must never lose the last active administrator. Use a
-        // single atomic predicate as a second safety check at the write.
-        if (user.role === "admin") {
+        // Do not deactivate the last active administrator.
+        // Transactional/concurrent changes still require integration testing.
+        if (user.role === "admin" && user.active) {
           const count = await User.countDocuments({ role: "admin", active: true });
           if (count <= 1) return authError(res, 409, "LAST_ADMIN", "The last active admin cannot be deleted.");
         }
@@ -317,6 +317,16 @@ export function createAdminController(User, Course, Offering) {
             res, 400, "SELF_UPDATE_RESTRICTED",
             "You cannot deactivate yourself or remove your own admin role."
           );
+        }
+
+        // Guard admin role demotion as well as deactivation.
+        if (user.role === "admin" && user.active &&
+            (body.active === false ||
+             (body.role !== undefined && body.role !== "admin"))) {
+          const activeAdmins = await User.countDocuments({ role: "admin", active: true });
+          if (activeAdmins <= 1) {
+            return authError(res, 409, "LAST_ADMIN", "The last active admin cannot be removed.");
+          }
         }
 
         if (body.name !== undefined) {
