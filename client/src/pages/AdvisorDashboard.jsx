@@ -174,6 +174,12 @@ export default function AdvisorDashboard() {
   async function handleRegister(offeringId) {
     if (!selectedStudent || pendingAction) return;
 
+    const offering = registrationData.offerings.find(row => row.id === offeringId);
+    if (!offering?.eligible) return;
+    if (!window.confirm(
+      `Register ${selectedStudent.name} (${selectedStudent.studentId}) for ${offering.courseCode} Section ${offering.section} in ${offering.term}?`
+    )) return;
+
     const studentId = selectedStudent.id;
     setPendingAction(offeringId);
     setActionMessage("");
