@@ -12,6 +12,7 @@ export function createAdvisorRoutes(User, Record, secret, registrationModels) {
   router.get("/students/:id/history", controller.history);
   if (registrationModels) {
     const registration = createRegistrationController({ User, Record, ...registrationModels });
+    router.patch("/offerings/:offeringId/add-drop", registration.window);
     router.get("/students/:id/registrations", registration.list);
     router.get("/students/:id/offerings", registration.offerings);
     router.post("/students/:id/registrations", registration.register);

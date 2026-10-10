@@ -84,6 +84,7 @@ const offeringSchema = new mongoose.Schema({
     required: true,
     min: 1
   },
+  addDropClosesAt: { type: Date, default: null },
   addDropOpen: {
     type: Boolean,
     default: true

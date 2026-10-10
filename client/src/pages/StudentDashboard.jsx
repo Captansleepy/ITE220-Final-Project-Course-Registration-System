@@ -7,6 +7,12 @@ export default function StudentDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [requestId, setRequestId] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
@@ -35,6 +41,13 @@ export default function StudentDashboard() {
   </main>;
   if (!data) return <main className="student-dashboard"><p role="status">Loading your student records...</p></main>;
 
+  const selected = data.registrations.find(r => r.id === requestId);
+  const subject = selected ? `Add/Drop Request - ${data.student.studentId} - ${selected.courseCode}` : "";
+  const closingDate = value => value ? new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok",
+  }).format(new Date(value)) + " (Bangkok time)" : "Not set - confirm with your advisor";
+  const windowOpen = registration => registration.addDropOpen &&
+    (!registration.addDropClosesAt || new Date(registration.addDropClosesAt).getTime() > now);
   return (
     <main className="student-dashboard">
       <header className="dashboard-header">
@@ -75,6 +88,8 @@ export default function StudentDashboard() {
                 <th>Course</th>
                 <th>Section</th>
                 <th>Meeting Times</th>
+                <th>Instructor</th>
+                <th>Add/Drop</th>
               </tr>
             </thead>
 
@@ -97,6 +112,13 @@ export default function StudentDashboard() {
                         {meeting.day}, {meeting.time}, {meeting.room}
                       </div>
                     ))}
+                  </td>
+                  <td>{registration.instructor || "Not specified"}</td>
+                  <td>
+                    <strong>{windowOpen(registration) ? "Open" : "Closed"}</strong>
+                    <div>Closing date: {closingDate(registration.addDropClosesAt)}</div>
+                    {windowOpen(registration) && <button type="button" className="request-add-drop"
+                      onClick={() => setRequestId(registration.id)}>Request add/drop</button>}
                   </td>
                 </tr>
               ))}
@@ -144,15 +166,27 @@ export default function StudentDashboard() {
       <section className="dashboard-section add-drop-section">
         <h2>Add / Drop Requests</h2>
 
-        <p>
-          Course add/drop requests are handled through the advisor workflow.
-          Students should complete the official form and follow the provided
-          instructions.
-        </p>
-
-        <p className="form-placeholder">
-          Add/Drop form link will be provided by the team.
-        </p>
+        <p>Your advisor processes registration changes after reviewing your signed request.</p>
+        {data.advisor ? <p>Assigned advisor: <strong>{data.advisor.name}</strong><br />
+          <a className="advisor-email" href={`mailto:${data.advisor.email}`}>{data.advisor.email}</a></p> :
+          <p role="status">No active advisor contact is available. Contact your department before submitting a request.</p>}
+        <a href="/forms/add-drop-request.pdf" download>Download Add/Drop Form (PDF)</a>
+        {selected && windowOpen(selected) ? <div className="add-drop-request" aria-live="polite">
+          <h3>Request for {selected.courseCode} - Section {selected.section}</h3>
+          <p>Term: {selected.term}. Closing date: {closingDate(selected.addDropClosesAt)}</p>
+          <ol>
+            <li>Download and open the Add/Drop Request form.</li>
+            <li>Fill in your student ID, name, term, and the course code and section you wish to add or drop.</li>
+            <li>State the reason for the request and sign the form.</li>
+            <li>Email the completed form as an attachment to your advisor at {data.advisor?.email || "the address provided by your department"}, using the subject line below.</li>
+            <li>Your advisor will confirm by email once the change is made.</li>
+          </ol>
+          <p><strong>Email subject:</strong> <span className="request-subject">{subject}</span></p>
+          {data.advisor && <a href={`mailto:${data.advisor.email}?subject=${encodeURIComponent(subject)}`}>Email advisor</a>}
+          <p>The email link does not attach the form automatically. Attach your completed, signed PDF before sending.</p>
+          <button type="button" onClick={() => setRequestId(null)}>Close instructions</button>
+        </div> : <p>Select Request add/drop beside a registered course with an open window to see its email instructions.
+          For a closed window, contact your advisor to ask about the available options.</p>}
       </section>
     </main>
   );

@@ -57,6 +57,7 @@ export default function AdvisorDashboard() {
   const [pendingAction, setPendingAction] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const [actionError, setActionError] = useState("");
+  const [windowDates, setWindowDates] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -242,6 +243,24 @@ export default function AdvisorDashboard() {
     } finally {
       setPendingAction("");
     }
+  }
+
+  async function handleWindow(offering, open) {
+    if (!selectedStudent || pendingAction) return;
+    const date = windowDates[offering.id];
+    if (open && !date) { setActionError("Choose a closing date in Bangkok time first."); return; }
+    setPendingAction(`window-${offering.id}`);
+    setActionError(""); setActionMessage("");
+    try {
+      await apiRequest(`/advisor/offerings/${offering.id}/add-drop`, {
+        method: "PATCH",
+        body: JSON.stringify({ addDropOpen: open,
+          ...(open ? { addDropClosesAt: `${date}:00+07:00` } : {}) }),
+      });
+      setActionMessage(`Add/drop window ${open ? "opened" : "closed"}. This applies to all students in this offering.`);
+      await refreshRegistrationData(selectedStudent.id);
+    } catch (error) { setActionError(error.message); }
+    finally { setPendingAction(""); }
   }
 
   function handleLogout() {
@@ -472,6 +491,7 @@ export default function AdvisorDashboard() {
                       <th>Instructor</th>
                       <th>Seats Left</th>
                       <th>Eligibility</th>
+                      <th>Add/Drop Window</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -499,6 +519,20 @@ export default function AdvisorDashboard() {
                           {offering.eligible
                             ? "Eligible"
                             : offering.reason || "Registration unavailable"}
+                        </td>
+                        <td>
+                          <p>{offering.addDropOpen ? "Open flag" : "Closed"}</p>
+                          <p>{offering.addDropClosesAt ? `Closes: ${new Intl.DateTimeFormat("en-GB", {
+                            dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok",
+                          }).format(new Date(offering.addDropClosesAt))} (Bangkok)` : "Closing date not set"}</p>
+                          <label htmlFor={`window-${offering.id}`}>New closing date (Bangkok time)</label>
+                          <input id={`window-${offering.id}`} type="datetime-local"
+                            value={windowDates[offering.id] || ""}
+                            disabled={Boolean(pendingAction)}
+                            onChange={event => setWindowDates(values => ({ ...values, [offering.id]: event.target.value }))} />
+                          <button type="button" disabled={Boolean(pendingAction)} onClick={() => handleWindow(offering, true)}>Open / update window</button>
+                          <button type="button" disabled={Boolean(pendingAction) || !offering.addDropOpen} onClick={() => handleWindow(offering, false)}>Close window</button>
+                          <small>Applies to every student in this offering.</small>
                         </td>
                         <td>
                           <button

@@ -40,7 +40,9 @@ function fixture() {
   };
   const User = { findOne: () => q(state.student), findOneAndUpdate: () => q(state.student) };
   const Record = { find: () => q(state.records) };
-  const Offering = { findById: () => q(state.offering), updateOne: async () => ({ modifiedCount: 1 }) };
+  const Offering = { findOneAndUpdate: (_filter, update) => {
+    Object.assign(state.offering, update.$set); return q(state.offering);
+  }, findById: () => q(state.offering), updateOne: async () => ({ modifiedCount: 1 }) };
   const Term = { findOneAndUpdate: async () => { state.locks++; return state.offering.term.isCurrent && !state.offering.term.isFinalised ? {} : null; } };
   const Registration = {
     find: () => q(state.rows.filter(r => r.status === "registered").map(r => ({ ...r, offering: state.offering }))),
@@ -52,7 +54,7 @@ function fixture() {
   };
   const controller = createRegistrationController({ User, Record, Offering, Registration, Term, transaction });
   async function call(action, overrides = {}) {
-    const req = { params: { id: sid, registrationId: rid }, body: { offeringId: oid }, user: { _id: "advisor" }, ...overrides };
+    const req = { params: { id: sid, registrationId: rid, offeringId: oid }, body: { offeringId: oid }, user: { _id: "advisor" }, ...overrides };
     const result = { status: 200 }; const res = { status(code) { result.status = code; return this; }, json(body) { result.body = body; } };
     await controller[action](req, res, error => { throw error; }); return result;
   }
@@ -89,4 +91,23 @@ test("concurrent controller calls serialize through the transaction boundary", a
   const results = await Promise.all([call("register"), call("register")]);
   assert.deepEqual(results.map(r => r.status).sort(), [201, 409]);
   assert.equal(state.rows.length, 1);
+});
+
+test("advisor opens with a future deadline and closes without losing the deadline", async () => {
+  const { state, call } = fixture();
+  const opened = await call("window", { body: { addDropOpen: true, addDropClosesAt: "2099-01-01T12:00:00+07:00" } });
+  assert.equal(opened.status, 200); assert.equal(state.offering.addDropOpen, true);
+  assert.equal(state.offering.addDropClosesAt.toISOString(), "2099-01-01T05:00:00.000Z");
+  await call("window", { body: { addDropOpen: false } });
+  assert.equal(state.offering.addDropOpen, false);
+  assert.equal(state.offering.addDropClosesAt.toISOString(), "2099-01-01T05:00:00.000Z");
+});
+test("window rejects missing/past/ambiguous dates, unknown fields and finalised terms", async () => {
+  const { state, call } = fixture();
+  for (const body of [{ addDropOpen: true }, { addDropOpen: true, addDropClosesAt: "2000-01-01T00:00:00Z" },
+    { addDropOpen: true, addDropClosesAt: "2099-01-01T12:00:00" }, { addDropOpen: false, capacity: 999 }]) {
+    assert.equal((await call("window", { body })).status, 400);
+  }
+  state.offering.term.isFinalised = true;
+  assert.equal((await call("window", { body: { addDropOpen: false } })).status, 409);
 });

@@ -37,5 +37,5 @@ export function publicOffering(o) {
   if (!o.course || !o.term) throw new Error("Missing offering references");
   return { id: id(o), courseCode: o.course.code, courseTitle: o.course.title, credits: o.course.credits,
     term: o.term.code, section: o.section, meetings: o.meetings.map(m => ({ day: m.day, startTime: m.startTime, endTime: m.endTime })),
-    room: o.room, instructor: o.instructor, capacity: o.capacity, addDropOpen: o.addDropOpen };
+    room: o.room, instructor: o.instructor, capacity: o.capacity, addDropOpen: o.addDropOpen, addDropClosesAt: o.addDropClosesAt ?? null };
 }

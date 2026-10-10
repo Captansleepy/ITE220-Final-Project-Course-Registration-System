@@ -34,6 +34,31 @@ export function createRegistrationController({ User, Record, Offering, Registrat
     }
   };
   return {
+    window: wrap(async (req, res) => {
+      valid(req.params.offeringId);
+      if (!req.body || typeof req.body.addDropOpen !== "boolean" ||
+          Object.keys(req.body).some(key => !["addDropOpen", "addDropClosesAt"].includes(key))) {
+        fail(400, "INVALID_INPUT", "Provide addDropOpen and, when opening, a closing date.");
+      }
+      const deadline = req.body.addDropOpen ? new Date(req.body.addDropClosesAt) : null;
+      if (req.body.addDropOpen && (typeof req.body.addDropClosesAt !== "string" ||
+          !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(req.body.addDropClosesAt) ||
+          !Number.isFinite(deadline.getTime()) || deadline.getTime() <= Date.now())) {
+        fail(400, "INVALID_INPUT", "The closing date must be a future timestamp with a timezone.");
+      }
+      let updated;
+      await transaction(async session => {
+        const o = await offering(req.params.offeringId, session);
+        if (!o) fail(404, "OFFERING_NOT_FOUND", "Offering not found.");
+        await lockTerm(o.term, session);
+        const row = await Offering.findOneAndUpdate({ _id: o._id }, { $set: {
+          addDropOpen: req.body.addDropOpen,
+          ...(deadline ? { addDropClosesAt: deadline } : {}),
+        } }, { new: true, session, runValidators: true }).populate("course").populate("term").lean();
+        updated = publicOffering(row);
+      });
+      res.json({ offering: updated });
+    }),
     list: wrap(async (req, res) => {
       await scopedStudent(req);
       const registrations = await active(req.params.id);
