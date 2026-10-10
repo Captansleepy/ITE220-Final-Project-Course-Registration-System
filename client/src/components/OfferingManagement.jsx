@@ -47,6 +47,19 @@ export default function OfferingManagement() {
     try {
       const body = { ...form, section: Number(form.section), capacity: Number(form.capacity) };
       if (editing) {
+        const original = offerings.find(o => o.id === editing);
+        if (original) {
+          for (const key of ["courseId", "termId", "section", "capacity", "room", "instructor", "meetings"]) {
+            const originalValue = key === "courseId" ? original.courseId
+              : key === "termId" ? original.termId : original[key];
+            if (JSON.stringify(body[key]) === JSON.stringify(originalValue)) delete body[key];
+          }
+        }
+        if (Object.keys(body).length === 0) {
+          setMessage("No changes to save."); setBusy(false); return;
+        }
+      }
+      if (editing) {
         await apiRequest("/advisor/offerings/" + editing, { method: "PATCH", body: JSON.stringify(body) });
       } else {
         await apiRequest("/advisor/offerings", { method: "POST", body: JSON.stringify(body) });
