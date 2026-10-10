@@ -82,6 +82,19 @@ useEffect(() => {
 }, []);
 
 
+async function reloadSections() {
+  setSectionsLoading(true);
+  setSectionsError("");
+  try {
+    const result = await apiRequest("/admin/sections");
+    setSections(result.sections || []);
+  } catch (err) {
+    setSectionsError(err.message || "Failed to load sections.");
+  } finally {
+    setSectionsLoading(false);
+  }
+}
+
 async function reloadUsers() {
   setLoading(true);
   setError("");
@@ -220,7 +233,11 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
       className={`sidebar-item ${
         activeMenu === item ? "active" : ""
       }`}
-      onClick={() => setActiveMenu(item)}
+      onClick={() => {
+        setActiveMenu(item);
+        if (["Dashboard", "Students", "Advisors"].includes(item)) void reloadUsers();
+        if (item === "Sections") void reloadSections();
+      }}
     >
       {item}
     </button>
@@ -246,7 +263,7 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
     </header>
 
 
-{activeMenu === "Accounts" && <AccountManagement />}
+{activeMenu === "Accounts" && <AccountManagement onChanged={reloadUsers} />}
 
 {activeMenu === "Dashboard" && (
   <section className="dashboard-panel">

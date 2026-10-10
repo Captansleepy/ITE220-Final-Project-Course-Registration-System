@@ -8,7 +8,7 @@ const inputStyle = { padding: "8px", maxWidth: "100%", minWidth: 0 };
 const scheduleText = meetings => (meetings || []).map(m =>
   m.day + " " + m.startTime + "–" + m.endTime).join(", ");
 
-export default function OfferingManagement() {
+export default function OfferingManagement({ onChanged }) {
   const [catalog, setCatalog] = useState({ courses: [], terms: [] });
   const [offerings, setOfferings] = useState([]);
   const [form, setForm] = useState(blank);
@@ -64,7 +64,9 @@ export default function OfferingManagement() {
       } else {
         await apiRequest("/advisor/offerings", { method: "POST", body: JSON.stringify(body) });
       }
-      await refresh(); reset(); setMessage("Offering saved. Existing registration history is protected.");
+      await refresh();
+      onChanged?.();
+      reset(); setMessage("Offering saved. Existing registration history is protected.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   async function remove(row) {
@@ -73,7 +75,9 @@ export default function OfferingManagement() {
     setBusy(true); setError(""); setMessage("");
     try {
       await apiRequest("/advisor/offerings/" + row.id, { method: "DELETE" });
-      await refresh(); setMessage("Unused offering removed.");
+      await refresh();
+      onChanged?.();
+      setMessage("Unused offering removed.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   return <section className="dashboard-panel" style={{ marginBottom: 24 }}>

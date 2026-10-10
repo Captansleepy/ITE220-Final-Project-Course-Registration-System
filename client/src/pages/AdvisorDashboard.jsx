@@ -294,7 +294,9 @@ export default function AdvisorDashboard() {
         </div>
       </header>
 
-      <OfferingManagement />
+      <OfferingManagement onChanged={() => {
+        if (selectedStudent) void refreshRegistrationData(selectedStudent.id).catch(error => setActionError(error.message));
+      }} />
       <section className="dashboard-panel">
         <h2>My Students</h2>
 

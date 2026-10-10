@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
 
 const clean = { name: "", email: "", password: "", role: "student", studentId: "", advisor: "", active: true };
-export default function AccountManagement() {
+export default function AccountManagement({ onChanged }) {
   const [users, setUsers] = useState([]);
   const [roleFilter, setRoleFilter] = useState("all");
   const [form, setForm] = useState(clean);
@@ -31,6 +31,13 @@ export default function AccountManagement() {
   async function save(event) {
     event.preventDefault(); setBusy(true); setError(""); setMessage("");
     try {
+      if (editing) {
+        const original = users.find(u => u.id === editing);
+        if (original?.active === true && form.active === false &&
+            !window.confirm(`Deactivate ${original.name} (${original.role})? Academic history will be preserved.`)) {
+          return;
+        }
+      }
       const body = { ...form };
       if (body.role !== "student") { delete body.studentId; delete body.advisor; }
       if (!body.password) delete body.password;
@@ -40,7 +47,9 @@ export default function AccountManagement() {
       } else {
         await apiRequest("/admin/users", { method: "POST", body: JSON.stringify(body) });
       }
-      await reload(); reset(); setMessage("Account saved successfully.");
+      await reload();
+      onChanged?.();
+      reset(); setMessage("Account saved successfully.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   async function deactivate(u) {
@@ -48,7 +57,9 @@ export default function AccountManagement() {
     setBusy(true); setError(""); setMessage("");
     try {
       await apiRequest("/admin/users/" + u.id, { method: "DELETE" });
-      await reload(); setMessage("Account deactivated; records preserved.");
+      await reload();
+      onChanged?.();
+      setMessage("Account deactivated; records preserved.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   const filtered = roleFilter === "all" ? users : users.filter(u => u.role === roleFilter);
