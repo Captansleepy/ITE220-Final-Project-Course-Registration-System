@@ -34,7 +34,7 @@ app.use(
   createAdminRoutes(User, Course, Offering, process.env.JWT_SECRET)
 );
 
-app.use("/api/advisor", createAdvisorRoutes(User, Record, process.env.JWT_SECRET, { Offering, Registration, Term }));
+app.use("/api/advisor", createAdvisorRoutes(User, Record, process.env.JWT_SECRET, { Course, Offering, Registration, Term }));
 
 app.use("/api/student", createStudentRoutes(User, Record, Registration, process.env.JWT_SECRET));
 
