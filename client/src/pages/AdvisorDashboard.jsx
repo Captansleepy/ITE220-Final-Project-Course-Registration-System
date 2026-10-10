@@ -44,6 +44,13 @@ export default function AdvisorDashboard() {
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [studentsError, setStudentsError] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [offeringRevision, setOfferingRevision] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const [result, setResult] = useState({
     studentId: null,
@@ -90,25 +97,10 @@ export default function AdvisorDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!selectedStudent) {
-      setResult({
-        studentId: null,
-        history: [],
-        loading: false,
-        error: "",
-      });
-      return;
-    }
+    if (!selectedStudent) return;
 
     const controller = new AbortController();
     const studentId = selectedStudent.id;
-
-    setResult({
-      studentId,
-      history: [],
-      loading: true,
-      error: "",
-    });
 
     async function load() {
       try {
@@ -142,19 +134,9 @@ export default function AdvisorDashboard() {
   }, [selectedStudent]);
 
   useEffect(() => {
-    if (!selectedStudent) {
-      setRegistrationData(emptyRegistrationData);
-      return;
-    }
+    if (!selectedStudent) return;
 
     let cancelled = false;
-
-    setRegistrationData({
-      ...emptyRegistrationData,
-      loading: true,
-    });
-    setActionMessage("");
-    setActionError("");
 
     fetchRegistrationData(selectedStudent.id)
       .then((data) => {
@@ -174,7 +156,17 @@ export default function AdvisorDashboard() {
     };
   }, [selectedStudent]);
 
+  function selectStudent(student) {
+    if (selectedStudent?.id === student.id) return;
+    setSelectedStudent(student);
+    setResult({ studentId: student.id, history: [], loading: true, error: "" });
+    setRegistrationData({ ...emptyRegistrationData, loading: true });
+    setActionMessage("");
+    setActionError("");
+  }
+
   async function refreshRegistrationData(studentId) {
+    setOfferingRevision(value => value + 1);
     const data = await fetchRegistrationData(studentId);
     setRegistrationData(data);
   }
@@ -294,7 +286,7 @@ export default function AdvisorDashboard() {
         </div>
       </header>
 
-      <OfferingManagement onChanged={() => {
+      <OfferingManagement refreshVersion={offeringRevision} onChanged={() => {
         if (selectedStudent) void refreshRegistrationData(selectedStudent.id).catch(error => setActionError(error.message));
       }} />
       <section className="dashboard-panel">
@@ -328,7 +320,7 @@ export default function AdvisorDashboard() {
                     <td>
                       <button
                         type="button"
-                        onClick={() => setSelectedStudent(student)}
+                        onClick={() => selectStudent(student)}
                         disabled={Boolean(pendingAction)}
                       >
                         {selectedStudent?.id === student.id
@@ -525,7 +517,7 @@ export default function AdvisorDashboard() {
                             : offering.reason || "Registration unavailable"}
                         </td>
                         <td>
-                          <p>{offering.addDropOpen && (!offering.addDropClosesAt || new Date(offering.addDropClosesAt).getTime() > Date.now()) ? "Open" : "Closed"}</p>
+                          <p>{offering.addDropOpen && (!offering.addDropClosesAt || new Date(offering.addDropClosesAt).getTime() > now) ? "Open" : "Closed"}</p>
                           <p>{offering.addDropClosesAt ? `Closes: ${new Intl.DateTimeFormat("en-GB", {
                             dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok",
                           }).format(new Date(offering.addDropClosesAt))} (Bangkok)` : "Closing date not set"}</p>

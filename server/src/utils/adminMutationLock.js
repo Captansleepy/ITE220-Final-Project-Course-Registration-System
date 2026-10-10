@@ -9,8 +9,8 @@ import mongoose from "mongoose";
  * MongoDB's transaction retry then reruns the last-admin check on a fresh
  * snapshot. Requires a replica set / Atlas transaction support.
  */
-export async function withAdminMutationLock(callback) {
-  const guards = mongoose.connection.db.collection("admin_mutation_guards");
+export async function withAdminMutationLock(callback, connection = mongoose.connection) {
+  const guards = connection.db.collection("admin_mutation_guards");
   const guardId = "admin-accounts";
 
   try {
@@ -25,7 +25,7 @@ export async function withAdminMutationLock(callback) {
     if (error?.code !== 11000) throw error;
   }
 
-  return mongoose.connection.transaction(async (session) => {
+  return connection.transaction(async (session) => {
     const locked = await guards.updateOne(
       { _id: guardId },
       { $inc: { revision: 1 } },

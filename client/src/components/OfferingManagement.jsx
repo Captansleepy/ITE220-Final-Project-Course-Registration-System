@@ -8,7 +8,7 @@ const inputStyle = { padding: "8px", maxWidth: "100%", minWidth: 0 };
 const scheduleText = meetings => (meetings || []).map(m =>
   m.day + " " + m.startTime + "–" + m.endTime).join(", ");
 
-export default function OfferingManagement({ onChanged }) {
+export default function OfferingManagement({ onChanged, refreshVersion = 0 }) {
   const [catalog, setCatalog] = useState({ courses: [], terms: [] });
   const [offerings, setOfferings] = useState([]);
   const [form, setForm] = useState(blank);
@@ -28,7 +28,7 @@ export default function OfferingManagement({ onChanged }) {
       .then(([c, o]) => { if (!cancelled) { setCatalog(c); setOfferings(o.offerings || []); } })
       .catch(err => { if (!cancelled) setError(err.message); });
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshVersion]);
   const set = (key, value) => setForm(f => ({ ...f, [key]: value }));
   function edit(row) {
     setEditing(row.id);
