@@ -2,6 +2,7 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { publicUser, authError } from "../utils/auth.js";
+import { withAdminMutationLock, AdminMutationError, assertAdminRemovalAllowed } from "../utils/adminMutationLock.js";
 
 const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validRoles = ["admin", "advisor", "student"];
@@ -18,6 +19,9 @@ function sendUser(res, user, status = 200) {
 }
 
 function handleError(res, error) {
+  if (error instanceof AdminMutationError) {
+    return authError(res, error.status, error.code, error.message);
+  }
   if (error?.code === 11000) {
     return authError(
       res, 409, "DUPLICATE_VALUE",
@@ -240,8 +244,8 @@ export function createAdminController(User, Course, Offering) {
       }
     },
 
-    // Safe deletion: preserve grade and registration history by deactivating users
-    // who are referenced by academic records or assigned students.
+    // Soft deletion preserves academic and advisor references.
+    // All admin account writes share a transaction-serialized guard.
     async deleteUser(req, res) {
       try {
         if (!mongoose.isValidObjectId(req.params.id)) {
@@ -250,20 +254,20 @@ export function createAdminController(User, Course, Offering) {
         if (String(req.params.id) === String(req.user._id)) {
           return authError(res, 400, "SELF_DELETE_RESTRICTED", "You cannot delete your own account.");
         }
-        const user = await User.findById(req.params.id);
-        if (!user) return authError(res, 404, "USER_NOT_FOUND", "User not found.");
 
-        // Do not deactivate the last active administrator.
-        // Transactional/concurrent changes still require integration testing.
-        if (user.role === "admin" && user.active) {
-          const count = await User.countDocuments({ role: "admin", active: true });
-          if (count <= 1) return authError(res, 409, "LAST_ADMIN", "The last active admin cannot be deleted.");
-        }
+        const user = await withAdminMutationLock(async (session) => {
+          const target = await User.findById(req.params.id).session(session);
+          if (!target) {
+            throw new AdminMutationError("USER_NOT_FOUND", "User not found.", 404);
+          }
+          await assertAdminRemovalAllowed(User, target,
+            { role: target.role, active: false }, session);
 
-        // Never hard-delete an account that other collections might reference.
-        // Inactivation is also required for advisor accounts with assignments.
-        user.active = false;
-        await user.save();
+          target.active = false;
+          await target.save({ session });
+          return target;
+        });
+
         return res.json({
           deleted: false,
           deactivated: true,
@@ -292,6 +296,10 @@ export function createAdminController(User, Course, Offering) {
           );
         }
 
+        const originalRole = user.role;
+        const originalActive = user.active;
+        const originalUpdatedAt = user.updatedAt?.getTime() ?? null;
+
         const body = req.body || {};
         const allowed = [
           "name", "email", "role", "studentId",
@@ -317,16 +325,6 @@ export function createAdminController(User, Course, Offering) {
             res, 400, "SELF_UPDATE_RESTRICTED",
             "You cannot deactivate yourself or remove your own admin role."
           );
-        }
-
-        // Guard admin role demotion as well as deactivation.
-        if (user.role === "admin" && user.active &&
-            (body.active === false ||
-             (body.role !== undefined && body.role !== "admin"))) {
-          const activeAdmins = await User.countDocuments({ role: "admin", active: true });
-          if (activeAdmins <= 1) {
-            return authError(res, 409, "LAST_ADMIN", "The last active admin cannot be removed.");
-          }
         }
 
         if (body.name !== undefined) {
@@ -370,20 +368,6 @@ export function createAdminController(User, Course, Offering) {
               res, 400, "VALIDATION_ERROR",
               "Active must be true or false."
             );
-          }
-
-          if (body.active === false && user.role === "admin") {
-            const activeAdmins = await User.countDocuments({
-              role: "admin",
-              active: true,
-            });
-
-            if (activeAdmins <= 1) {
-              return authError(
-                res, 400, "LAST_ADMIN",
-                "The last active admin cannot be deactivated."
-              );
-            }
           }
 
           user.active = body.active;
@@ -446,7 +430,25 @@ export function createAdminController(User, Course, Offering) {
           user.advisor = undefined;
         }
 
-        await user.save();
+        // All edit paths (including role demotion and status changes) use
+        // the same database lock as DELETE. Recheck inside the transaction
+        // so concurrent requests can never both remove the last admin.
+        await withAdminMutationLock(async (session) => {
+          const latest = await User.findById(user._id).session(session);
+          if (!latest) {
+            throw new AdminMutationError("USER_NOT_FOUND", "User not found.", 404);
+          }
+          const latestUpdatedAt = latest.updatedAt?.getTime() ?? null;
+          if (latest.role !== originalRole ||
+              latest.active !== originalActive ||
+              latestUpdatedAt !== originalUpdatedAt) {
+            throw new AdminMutationError("ACCOUNT_CHANGED",
+              "This account changed while you were editing it. Refresh and try again.");
+          }
+          await assertAdminRemovalAllowed(User, latest,
+            { role: user.role, active: user.active }, session);
+          await user.save({ session });
+        });
         return sendUser(res, user);
       } catch (error) {
         return handleError(res, error);
