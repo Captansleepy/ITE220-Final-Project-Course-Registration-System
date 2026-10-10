@@ -7,6 +7,22 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+const [createLoading, setCreateLoading] = useState(false);
+const [createError, setCreateError] = useState("");
+const [createSuccess, setCreateSuccess] = useState("");
+const [editingStudent, setEditingStudent] = useState(null);
+const [editLoading, setEditLoading] = useState(false);
+const [editError, setEditError] = useState("");
+const [editSuccess, setEditSuccess] = useState("");
+
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  password: "",
+  studentId: "",
+  advisor: "",
+});
 
   const [courses, setCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
@@ -64,6 +80,106 @@ useEffect(() => {
   loadSections();
 }, []);
 
+
+async function reloadUsers() {
+  setLoading(true);
+  setError("");
+
+  try {
+    const result = await apiRequest("/admin/users");
+    setUsers(result.users || []);
+  } catch (err) {
+    setError(err.message || "Failed to load users.");
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+
+async function handleCreateStudent(event) {
+  event.preventDefault();
+  setCreateLoading(true);
+  setCreateError("");
+  setCreateSuccess("");
+
+  try {
+    await apiRequest("/admin/users", {
+      method: "POST",
+      body: JSON.stringify({
+        ...formData,
+        role: "student",
+      }),
+    });
+
+    setCreateSuccess("Student created successfully.");
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      studentId: "",
+      advisor: "",
+    });
+    setShowCreateForm(false);
+    await reloadUsers();
+  } catch (err) {
+    setCreateError(err.message || "Failed to create student.");
+  } finally {
+    setCreateLoading(false);
+  }
+}
+
+async function handleEditStudent(event) {
+  event.preventDefault();
+  if (!editingStudent) return;
+
+  setEditLoading(true);
+  setEditError("");
+  setEditSuccess("");
+
+  try {
+    await apiRequest(`/admin/users/${editingStudent.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        name: editingStudent.name,
+      }),
+    });
+
+    setEditSuccess("Student updated successfully.");
+    setEditingStudent(null);
+    await reloadUsers();
+  } catch (err) {
+    setEditError(err.message || "Failed to update student.");
+  } finally {
+    setEditLoading(false);
+  }
+}
+
+async function handleDeactivateStudent(student) {
+  const confirmed = window.confirm(
+    `Deactivate ${student.name} (${student.studentId})?`
+  );
+
+  if (!confirmed) return;
+
+  setEditError("");
+  setEditSuccess("");
+
+  try {
+    await apiRequest(`/admin/users/${student.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        active: false,
+      }),
+    });
+
+    setEditSuccess("Student deactivated successfully.");
+    await reloadUsers();
+  } catch (err) {
+    setEditError(err.message || "Failed to deactivate student.");
+  }
+}
+
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 
 const students = users.filter(
@@ -116,19 +232,21 @@ window.location.href = "/";
 
 return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div className="admin-brand"> <h2>Course Registration</h2> <p>Admin Panel</p> </div>
 
-    <nav>
-      {menuItems.map((item) => (
-        <button
-          key={item}
-          className={`sidebar-item ${
-            activeMenu === item ? "active" : ""
-          }`}
-          onClick={() => setActiveMenu(item)}
-        >
-          {item}
-        </button>
-      ))}
-    </nav>
+
+<nav>
+  {menuItems.map((item) => (
+    <button
+      key={item}
+      type="button"
+      className={`sidebar-item ${
+        activeMenu === item ? "active" : ""
+      }`}
+      onClick={() => setActiveMenu(item)}
+    >
+      {item}
+    </button>
+  ))}
+</nav>
 
     <button className="logout-button" onClick={handleLogout}>
       Logout
@@ -231,6 +349,169 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
       <section className="dashboard-panel">
         <h2>Students</h2>
 
+        {editError && <p role="alert">{editError}</p>}
+{editSuccess && <p role="status">{editSuccess}</p>}
+
+{editingStudent && (
+  <form onSubmit={handleEditStudent}>
+    <label>
+      Student Name
+      <input
+        required
+        maxLength={100}
+        value={editingStudent.name}
+        onChange={(event) =>
+          setEditingStudent({
+            ...editingStudent,
+            name: event.target.value,
+          })
+        }
+      />
+    </label>
+
+    <button
+  type="button"
+  disabled={editLoading}
+  onClick={() => setEditingStudent(null)}
+>
+  Cancel
+</button>
+<button type="submit" disabled={editLoading}>
+  {editLoading ? "Saving..." : "Save Changes"}
+</button>
+  </form>
+)}
+
+
+<button
+  type="button"
+
+onClick={() => {
+  setEditingStudent(null);
+  setCreateError("");
+  setCreateSuccess("");
+  setShowCreateForm(true);
+}}
+>
+  Create Student
+</button>
+
+{createError && <p role="alert">{createError}</p>}
+{createSuccess && <p role="status">{createSuccess}</p>}
+
+{showCreateForm && (
+  <form onSubmit={handleCreateStudent}>
+    <div>
+      <label>
+        Name
+        <input
+          required
+          maxLength={100}
+          value={formData.name}
+          onChange={(e) =>
+            setFormData({ ...formData, name: e.target.value })
+          }
+        />
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Email
+        <input
+          required
+          type="email"
+          value={formData.email}
+          onChange={(e) =>
+            setFormData({ ...formData, email: e.target.value })
+          }
+        />
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Student ID
+        <input
+          required
+          value={formData.studentId}
+          onChange={(e) =>
+            setFormData({ ...formData, studentId: e.target.value })
+          }
+        />
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Password
+        <input
+          required
+          type="password"
+          minLength={8}
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+        />
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Advisor
+        <select
+          required
+          value={formData.advisor}
+          onChange={(e) =>
+            setFormData({ ...formData, advisor: e.target.value })
+          }
+        >
+          <option value="">Select an advisor</option>
+          {advisors
+            .filter((advisor) => advisor.active)
+            .map((advisor) => (
+              <option key={advisor.id} value={advisor.id}>
+                {advisor.name} ({advisor.email})
+              </option>
+            ))}
+
+        </select>
+      </label>
+    </div>
+
+
+<div className="form-actions">
+  <button
+    type="button"
+    onClick={() => {
+      setShowCreateForm(false);
+      setCreateError("");
+      setCreateSuccess("");
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        studentId: "",
+        advisor: "",
+      });
+    }}
+    disabled={createLoading}
+  >
+    Cancel
+  </button>
+
+  <button type="submit" disabled={createLoading}>
+    {createLoading ? "Creating..." : "Save Student"}
+  </button>
+</div>
+
+
+</form>
+)}
+
+
+
         <div className="student-table-wrapper">
           <table className="student-table">
             <thead>
@@ -240,6 +521,7 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
                 <th>Email</th>
                 <th>Advisor</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -262,7 +544,37 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
       <td>{student.name}</td>
       <td>{student.email}</td>
       <td>{student.advisor?.name || "Not assigned"}</td>
-      <td>{student.active ? "Active" : "Inactive"}</td>
+
+<td>{student.active ? "Active" : "Inactive"}</td>
+<td>
+  <button
+    type="button"
+
+onClick={() => {
+  setShowCreateForm(false);
+  setCreateError("");
+  setCreateSuccess("");
+  setEditError("");
+  setEditSuccess("");
+  setEditingStudent({
+    id: student.id,
+    name: student.name,
+    studentId: student.studentId,
+  });
+}}
+  >
+    Edit
+  </button>
+
+  {student.active && student.id !== user.id && (
+    <button
+      type="button"
+      onClick={() => handleDeactivateStudent(student)}
+    >
+      Deactivate
+    </button>
+  )}
+</td>
     </tr>
   ))}
 
@@ -331,7 +643,7 @@ return ( <div className="admin-layout"> <aside className="admin-sidebar"> <div c
           </tr>
         </thead>
 
-        
+
 <tbody>
   {sectionsLoading && (
     <tr>

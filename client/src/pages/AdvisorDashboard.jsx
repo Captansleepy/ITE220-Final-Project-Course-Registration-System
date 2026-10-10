@@ -46,12 +46,28 @@ export default function AdvisorDashboard() {
     return () => controller.abort();
   }, [selectedStudent]);
 
+function handleLogout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "/";
+}
+
   const historyLoading = result.loading || result.studentId !== selectedStudent?.id;
   return (
     <main className="admin-main">
       <header className="admin-header">
         <div><h1>Advisor Dashboard</h1><p>Manage students and view student academic history.</p></div>
-        <div className="admin-user"><strong>{user.name}</strong><span>{user.email}</span></div>
+        <div className="admin-user">
+  <strong>{user.name}</strong>
+  <span>{user.email}</span>
+  <button
+    type="button"
+    className="logout-button"
+    onClick={handleLogout}
+  >
+    Logout
+  </button>
+</div>
       </header>
       <section className="dashboard-panel">
         <h2>My Students</h2>
