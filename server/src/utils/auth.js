@@ -12,7 +12,8 @@ export function requireJwtSecret(secret) {
 }
 
 export function createToken(user, secret) {
-  return jwt.sign({}, secret, {
+  // "sv" = session version. Accounts created before this field existed count as 0.
+  return jwt.sign({ sv: user.sessionVersion ?? 0 }, secret, {
     algorithm: 'HS256', subject: String(user._id),
     issuer, audience, expiresIn: '1h',
   });
@@ -24,6 +25,11 @@ export function verifyToken(token, secret) {
   });
   if (typeof payload !== 'object' || !/^[a-f0-9]{24}$/i.test(payload.sub || '') || !Number.isInteger(payload.exp)) {
     throw new Error('Invalid token subject or expiration.');
+  }
+  // Tokens made before this change have no "sv"; treat them as version 0.
+  if (payload.sv === undefined) payload.sv = 0;
+  if (!Number.isInteger(payload.sv) || payload.sv < 0) {
+    throw new Error('Invalid token session version.');
   }
   return payload;
 }
