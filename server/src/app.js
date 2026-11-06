@@ -1,4 +1,6 @@
 import AddDropRequest from "./models/AddDropRequest.js";
+import PasswordResetToken from "./models/PasswordResetToken.js";
+import { createMailer } from "./utils/mailer.js";
 import Registration from "./models/Registration.js";
 import { createStudentRoutes } from "./routes/studentRoutes.js";
 import Record from "./models/Record.js";
@@ -27,7 +29,12 @@ app.use("/api/health", healthRoutes);
 
 app.use(
   "/api/auth",
-  createAuthRoutes(User, process.env.JWT_SECRET)
+  createAuthRoutes(User, process.env.JWT_SECRET, {
+    PasswordResetToken,
+    mailer: createMailer(),
+    // Address of the website, used to build the link in the email.
+    appUrl: process.env.APP_BASE_URL || process.env.CLIENT_ORIGIN || "http://localhost:5174",
+  })
 );
 
 app.use(

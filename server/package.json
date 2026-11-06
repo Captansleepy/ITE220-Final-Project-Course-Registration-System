@@ -12,7 +12,8 @@
     "demo:preview": "node scripts/seed-demo.mjs --preview",
     "demo:seed": "node --env-file=.env scripts/seed-demo.mjs --apply",
     "test:requests:integration": "node --env-file=.env scripts/check-requests.mjs",
-    "test:sessions:integration": "node --env-file=.env scripts/check-sessions.mjs"
+    "test:sessions:integration": "node --env-file=.env scripts/check-sessions.mjs",
+    "test:reset:integration": "node --env-file=.env scripts/check-reset.mjs"
   },
   "keywords": [],
   "author": "",

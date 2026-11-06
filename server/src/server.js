@@ -1,4 +1,5 @@
 import AddDropRequest from "./models/AddDropRequest.js";
+import PasswordResetToken from "./models/PasswordResetToken.js";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import mongoose from "mongoose";
@@ -14,6 +15,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 try {
   await connectDB();
   await AddDropRequest.createIndexes();
+  await PasswordResetToken.createIndexes();
 
   const server = app.listen(port, () => {
     console.log(`API running at http://localhost:${port}`);
