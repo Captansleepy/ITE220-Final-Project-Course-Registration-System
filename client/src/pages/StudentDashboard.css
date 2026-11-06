@@ -1,149 +1,28 @@
-.student-dashboard {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 20px 48px;
-  color: #172033;
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  align-items: flex-start;
-  margin-bottom: 32px;
-}
-
-.dashboard-header h1 {
-  margin: 4px 0 8px;
-  font-size: 32px;
-}
-
-.sample-label {
-  display: inline-block;
-  margin: 0;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #fff3cd;
-  color: #7a5a00;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.student-info-card,
-.summary-card,
-.dashboard-section {
-  background: #ffffff;
-  border: 1px solid #d8dee8;
-  border-radius: 10px;
-}
-
-.student-info-card {
-  min-width: 220px;
-  padding: 18px;
-}
-
-.student-info-card span,
-.summary-card span {
-  display: block;
-  color: #667085;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.student-info-card strong,
-.summary-card strong {
-  font-size: 22px;
-}
-
-.dashboard-section {
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.dashboard-section h2 {
-  margin-top: 0;
-  margin-bottom: 18px;
-}
-
-.summary-card {
-  max-width: 260px;
-  padding: 18px;
-  background: #f8fafc;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #e5e7eb;
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  background: #f8fafc;
-  font-weight: 700;
-}
-
-.meeting-time + .meeting-time {
-  margin-top: 6px;
-}
-
-.history-group + .history-group {
-  margin-top: 24px;
-}
-
-.history-group h3 {
-  margin-bottom: 12px;
-}
-
-.add-drop-section p {
-  max-width: 760px;
-}
-
-.add-drop-section a {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: #2563eb;
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.add-drop-section a:hover {
-  background: #1d4ed8;
-}
-
-@media (max-width: 700px) {
-  .dashboard-header {
-    flex-direction: column;
-  }
-
-  .student-info-card {
-    width: 100%;
-  }
-
-  .student-dashboard {
-    padding: 20px 12px 36px;
-  }
-
-  .dashboard-section {
-    padding: 18px;
-  }
-}
-.add-drop-section .advisor-email { background: none; color: #1d4ed8; padding: 0; font-weight: normal; }
-.add-drop-request { margin-top: 20px; padding: 20px; border: 1px solid #d8dee8; border-radius: 8px; background: #f8fafc; }
-.add-drop-request li { margin: 10px 0; }
-.request-subject { overflow-wrap: anywhere; }
-.student-dashboard .request-add-drop { margin-top: 10px; padding: 8px 12px; border: 0; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; }
-.student-dashboard .request-add-drop:focus-visible, .add-drop-section a:focus-visible { outline: 3px solid #172033; outline-offset: 3px; }
+.student-dashboard { max-width:1260px; margin:0 auto; padding:44px 36px 64px; }
+.dashboard-header { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:32px; }
+.dashboard-header h1 { margin:0 0 10px; font-size:2rem; }
+.dashboard-header > div > p:not(.eyebrow) { color:var(--muted); margin:0; font-size:.9rem; }
+.dashboard-header .eyebrow { margin-bottom:14px; }
+.student-info-card { padding:0 24px; border-left:1px solid #cddbe0; margin-left:auto; }
+.student-info-card span { display:block; font-size:.7rem; color:var(--muted); margin-bottom:5px; }
+.student-info-card strong { font-size:1rem; }
+.dashboard-section { padding:28px; margin-bottom:24px; background:white; border:1px solid var(--border); border-radius:14px; box-shadow:0 2px 8px #142d4303; }
+.dashboard-section h2 { font-size:1.15rem; margin:0 0 18px; }
+.dashboard-section > p, .dashboard-section li { font-size:.85rem; }
+.summary-card { display:inline-flex; flex-direction:column; min-width:180px; padding:16px 22px; border:1px solid #cfe5df; border-radius:10px; background:#f0f8f5; }
+.summary-card span { color:var(--muted); font-size:.75rem; }
+.summary-card strong { font-size:2rem; color:var(--teal); margin-top:4px; }
+.meeting-time + .meeting-time { margin-top:8px; }
+.history-group + .history-group { margin-top:24px; }
+.history-group h3 { font-size:.8rem; color:var(--muted); margin:24px 0 10px; }
+.add-drop-section p { max-width:760px; line-height:1.8; }
+.add-drop-section a:not(.advisor-email) { display:inline-block; padding:10px 16px; margin-top:8px; color:white; background:var(--teal); border-radius:8px; text-decoration:none; font-size:.8rem; font-weight:600; }
+.add-drop-section a:not(.advisor-email):hover { background:var(--teal-hover); }
+.add-drop-section .advisor-email { display:inline-block; color:var(--teal); padding:0; margin:4px 0; text-decoration:underline; text-underline-offset:3px; }
+.add-drop-request { padding:22px; margin-top:24px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); }
+.add-drop-request h3 { font-size:1rem; }
+.add-drop-request li { margin:10px 0; }
+.add-drop-request button { margin-top:12px; }
+.request-subject { overflow-wrap:anywhere; }
+.student-dashboard .request-add-drop { margin-top:10px; color:var(--teal); border:1px solid #b7d9d0; background:#edf7f2; font-size:.75rem; }
+@media(max-width:700px) { .student-dashboard { padding:28px 16px 40px; } .dashboard-header { flex-wrap:wrap; align-items:flex-start; gap:20px; } .dashboard-header > div:first-child { width:100%; } .dashboard-header h1 { font-size:1.7rem; } .student-info-card { margin-left:0; padding:0; border:0; } .dashboard-header > button { margin-left:auto; } .dashboard-section { padding:20px; } }

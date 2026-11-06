@@ -1,3 +1,4 @@
+import AddDropRequests from "../components/AddDropRequests.jsx";
 
 import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
@@ -292,6 +293,10 @@ export default function AdvisorDashboard() {
         </div>
       </header>
 
+      <AddDropRequests advisor onChanged={() => {
+        setOfferingRevision(value => value + 1);
+        if (selectedStudent) void refreshRegistrationData(selectedStudent.id).catch(error => setActionError(error.message));
+      }} />
       <OfferingManagement refreshVersion={offeringRevision} onChanged={() => {
         if (selectedStudent) void refreshRegistrationData(selectedStudent.id).catch(error => setActionError(error.message));
       }} />

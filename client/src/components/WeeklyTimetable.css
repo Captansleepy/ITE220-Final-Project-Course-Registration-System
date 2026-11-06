@@ -1,0 +1,25 @@
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+.section-heading h2 { margin-bottom: 8px; }
+.section-description { color: var(--muted); font-size: .875rem; margin: 0; }
+.view-switch { display: flex; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9px; padding: 3px; flex-shrink: 0; }
+.view-switch button { border: 0; min-height: 34px; padding: 6px 14px; background: transparent; color: var(--muted); box-shadow: none; }
+.view-switch button[aria-pressed="true"] { background: var(--navy); color: white; }
+.timetable-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+.timetable { display: grid; grid-template-columns: 66px repeat(var(--day-count), minmax(128px, 1fr)); min-width: 710px; }
+.timetable-corner, .timetable-day-name { padding: 15px 8px; text-align: center; background: var(--surface-soft); font-size: .75rem; font-weight: 700; border-bottom: 1px solid var(--border); }
+.timetable-hours { background: white; }
+.timetable-hours span { display: block; height: 64px; padding: 8px; color: var(--muted); font-size: .68rem; font-variant-numeric: tabular-nums; }
+.timetable-column { position: relative; border-left: 1px solid var(--border); background: repeating-linear-gradient(to bottom, transparent 0, transparent 63px, var(--border) 63px, var(--border) 64px); }
+.timetable-event { position: absolute; border-radius: 6px; border: 1px solid #b7dcd6; border-left: 3px solid var(--teal); background: #e9f5f1; color: #154d46; padding: 9px 8px; overflow: auto; display: flex; flex-direction: column; gap: 5px; font-size: .7rem; line-height: 1.35; }
+.timetable-event strong { font-size: .8rem; }
+.timetable-event small { margin-top: auto; font-size: .65rem; }
+.timetable-event-title { color: #38655e; }
+.portal-empty { padding: 36px 20px; border: 1px dashed var(--border); border-radius: 12px; text-align: center; }
+.portal-empty p { color: var(--muted); }
+.schedule-day + .schedule-day { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 12px; }
+.schedule-day h3 { font-size: .875rem; }
+.schedule-list-event { display: flex; gap: 20px; padding: 14px 0; }
+.schedule-list-event > span { color: var(--teal); font-size: .8rem; font-weight: 700; min-width: 95px; }
+.schedule-list-event p { margin: 5px 0; }
+.schedule-list-event small { color: var(--muted); }
+@media(max-width: 600px) { .section-heading { flex-direction: column; } .schedule-list-event { gap: 12px; } }

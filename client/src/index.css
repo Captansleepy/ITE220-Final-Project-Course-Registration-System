@@ -1,37 +1,25 @@
 :root {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #1f2937;
-  background: #f5f7fb;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  font-family: "Avenir Next", "Segoe UI", Arial, sans-serif;
+  color: #182c40; background: #f3f6f8; font-synthesis: none; text-rendering: optimizeLegibility;
+  --navy: #142d43; --teal: #087c71; --teal-hover: #066258; --muted: #596e7f;
+  --border: #dce5ea; --surface-soft: #f6f9fa; --danger: #a82e38;
 }
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  min-height: 100vh;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-[role="alert"] {
-  color: #a31919;
-}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+body { min-height: 100vh; line-height: 1.5; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; min-height: 42px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--navy); font-size: .85rem; font-weight: 600; transition: background .15s, border-color .15s; }
+button:hover:not(:disabled) { background: #edf5f3; border-color: #9cc6bf; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+input:not([type="checkbox"]), select, textarea { min-height: 44px; border: 1px solid #cbd8e0; border-radius: 8px; padding: 10px 12px; color: var(--navy); background: white; }
+input[aria-invalid="true"] { border-color: var(--danger); }
+:focus-visible { outline: 3px solid #238d80; outline-offset: 3px; }
+a { color: var(--teal); }
+h1, h2, h3 { color: var(--navy); line-height: 1.25; }
+h1 { letter-spacing: -.035em; }
+h2 { letter-spacing: -.02em; }
+[role="alert"] { color: var(--danger); }
+.eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .15em; color: var(--teal); margin: 0 0 12px; }
+.service-notice { margin: 0; padding: 12px 24px; background: #fff3e5; font-size: .85rem; text-align: center; }
+@media(prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }

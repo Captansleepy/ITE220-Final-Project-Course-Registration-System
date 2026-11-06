@@ -1,13 +1,14 @@
+import AddDropRequests from "../components/AddDropRequests.jsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../api.js";
+import WeeklyTimetable from "../components/WeeklyTimetable.jsx";
 import "./StudentDashboard.css";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const [requestId, setRequestId] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30000);
@@ -17,7 +18,6 @@ export default function StudentDashboard() {
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
-      setData(null);
       setError("");
       try {
         const result = await apiRequest("/student/dashboard", { signal: controller.signal });
@@ -41,8 +41,6 @@ export default function StudentDashboard() {
   </main>;
   if (!data) return <main className="student-dashboard"><p role="status">Loading your student records...</p></main>;
 
-  const selected = data.registrations.find(r => r.id === requestId);
-  const subject = selected ? `Add/Drop Request - ${data.student.studentId} - ${selected.courseCode}` : "";
   const closingDate = value => value ? new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok",
   }).format(new Date(value)) + " (Bangkok time)" : "Not set - confirm with your advisor";
@@ -52,8 +50,9 @@ export default function StudentDashboard() {
     <main className="student-dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Student Dashboard</h1>
-          <p>Welcome, {data.student.name}</p>
+          <p className="eyebrow">Course Portal / Student workspace</p>
+          <h1>Your academic overview</h1>
+          <p>Welcome back, {data.student.name}.</p>
         </div>
 
         <div className="student-info-card">
@@ -62,6 +61,8 @@ export default function StudentDashboard() {
         </div>
         <button type="button" onClick={logout}>Logout</button>
       </header>
+
+      <WeeklyTimetable registrations={data.registrations} />
 
       <section className="dashboard-section">
         <h2>Academic Summary</h2>
@@ -117,8 +118,7 @@ export default function StudentDashboard() {
                   <td>
                     <strong>{windowOpen(registration) ? "Open" : "Closed"}</strong>
                     <div>Closing date: {closingDate(registration.addDropClosesAt)}</div>
-                    {windowOpen(registration) && <button type="button" className="request-add-drop"
-                      onClick={() => setRequestId(registration.id)}>Request add/drop</button>}
+                    {windowOpen(registration) && <a href="#student-requests">Request a change</a>}
                   </td>
                 </tr>
               ))}
@@ -163,30 +163,11 @@ export default function StudentDashboard() {
         ))}
       </section>
 
-      <section className="dashboard-section add-drop-section">
-        <h2>Add / Drop Requests</h2>
-
-        <p>Your advisor processes registration changes after reviewing your signed request.</p>
-        {data.advisor ? <p>Assigned advisor: <strong>{data.advisor.name}</strong><br />
-          <a className="advisor-email" href={`mailto:${data.advisor.email}`}>{data.advisor.email}</a></p> :
-          <p role="status">No active advisor contact is available. Contact your department before submitting a request.</p>}
-        <a href="/forms/add-drop-request.pdf" download>Download Add/Drop Form (PDF)</a>
-        {selected && windowOpen(selected) ? <div className="add-drop-request" aria-live="polite">
-          <h3>Request for {selected.courseCode} - Section {selected.section}</h3>
-          <p>Term: {selected.term}. Closing date: {closingDate(selected.addDropClosesAt)}</p>
-          <ol>
-            <li>Download and open the Add/Drop Request form.</li>
-            <li>Fill in your student ID, name, term, and the course code and section you wish to add or drop.</li>
-            <li>State the reason for the request and sign the form.</li>
-            <li>Email the completed form as an attachment to your advisor at {data.advisor?.email || "the address provided by your department"}, using the subject line below.</li>
-            <li>Your advisor will confirm by email once the change is made.</li>
-          </ol>
-          <p><strong>Email subject:</strong> <span className="request-subject">{subject}</span></p>
-          {data.advisor && <a href={`mailto:${data.advisor.email}?subject=${encodeURIComponent(subject)}`}>Email advisor</a>}
-          <p>The email link does not attach the form automatically. Attach your completed, signed PDF before sending.</p>
-          <button type="button" onClick={() => setRequestId(null)}>Close instructions</button>
-        </div> : <p>Select Request add/drop beside a registered course with an open window to see its email instructions.
-          For a closed window, contact your advisor to ask about the available options.</p>}
+      <div id="student-requests"><AddDropRequests onChanged={() => setAttempt(value => value + 1)} /></div>
+      <section className="dashboard-section">
+        <h2>Advisor contact</h2>
+        {data.advisor ? <p>{data.advisor.name} · <a href={`mailto:${data.advisor.email}`}>{data.advisor.email}</a></p> : <p>Contact your department to arrange an advisor.</p>}
+        <p>Submit Add/Drop requests through the portal above. If your department asks for a signed form, you can also <a href="/forms/add-drop-request.pdf" download>download the PDF</a>.</p>
       </section>
     </main>
   );

@@ -51,17 +51,9 @@ function App() {
 
   return (
     <>
-      {connection.loading && (
-        <p role="status">Checking API connection...</p>
-      )}
-
-      {connection.message && (
-        <p role="status">{connection.message}</p>
-      )}
-
       {connection.error && (
-        <p role="alert">
-          Could not connect to the API: {connection.error}
+        <p className="service-notice" role="alert">
+          The portal service is unavailable. Please try again shortly.
         </p>
       )}
 

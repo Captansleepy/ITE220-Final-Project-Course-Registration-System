@@ -9,7 +9,7 @@ export function createRegistrationController({ User, Record, Offering, Registrat
     const filter = { _id: req.params.id, role: "student", advisor: req.user._id };
     // Touch the student inside the transaction to conflict with concurrent reassignment/deactivation.
     const student = mutate
-      ? await User.findOneAndUpdate(filter, { $set: { updatedAt: new Date() } }, { new: true, session }).lean()
+      ? await User.findOneAndUpdate(filter, { $set: { updatedAt: new Date() } }, { returnDocument: "after", session }).lean()
       : await User.findOne(filter).session(session ?? null).lean();
     if (!student) fail(404, "STUDENT_NOT_FOUND", "Student not found in your assigned students.");
     if (mutate && !student.active) fail(409, "STUDENT_INACTIVE", "Inactive students cannot be registered or dropped.");
@@ -23,7 +23,7 @@ export function createRegistrationController({ User, Record, Offering, Registrat
     // All registration writes contend on this document. Transaction retries prevent capacity
     // and timetable write skew, including concurrent requests for different offerings.
     const locked = await Term.findOneAndUpdate({ _id: term._id, isCurrent: true, isFinalised: false },
-      { $inc: { registrationRevision: 1 } }, { new: true, session });
+      { $inc: { registrationRevision: 1 } }, { returnDocument: "after", session });
     if (!locked) fail(409, "TERM_CLOSED", "The term is not current or has been finalised.");
   };
   const wrap = handler => async (req, res, next) => {
@@ -33,7 +33,35 @@ export function createRegistrationController({ User, Record, Offering, Registrat
       next(error);
     }
   };
+  const registerInSession = async (req, session) => {
+    const o = await offering(req.body.offeringId, session);
+    if (!o) fail(404, "OFFERING_NOT_FOUND", "Offering not found.");
+    await lockTerm(o.term, session);
+    await scopedStudent(req, session, true);
+    // Touch the offering to conflict with concurrent edits of its capacity or timetable.
+    await Offering.updateOne({ _id: o._id }, { $set: { updatedAt: new Date() } }, { session });
+    const records = await Record.find({ student: req.params.id }).session(session).lean();
+    const registrations = await active(req.params.id, session);
+    const used = await Registration.countDocuments({ offering: o._id, status: "registered" }).session(session);
+    const rule = offeringEligibility(o, records, registrations, used);
+    if (!rule.eligible) fail(409, rule.code, rule.reason);
+    // Reuse a dropped row, compatible with both unique and partial unique seed indexes.
+    let row = await Registration.findOneAndUpdate({ student: req.params.id, offering: o._id, status: "dropped" },
+      { $set: { status: "registered" } }, { returnDocument: "after", session });
+    if (!row) [row] = await Registration.create([{ student: req.params.id, offering: o._id, status: "registered" }], { session });
+    return { id: String(row._id), status: row.status, offering: publicOffering(o) };
+  };
+  const dropInSession = async (req, session) => {
+    const row = await Registration.findOne({ _id: req.params.registrationId, student: req.params.id, status: "registered" }).session(session).lean();
+    if (!row) fail(404, "REGISTRATION_NOT_FOUND", "Active registration not found.");
+    const o = await offering(row.offering, session);
+    if (!o) throw new Error("Missing registration offering");
+    await lockTerm(o.term, session);
+    await scopedStudent(req, session, true);
+    await Registration.updateOne({ _id: row._id, status: "registered" }, { $set: { status: "dropped" } }, { session });
+  };
   return {
+    registerInSession, dropInSession,
     window: wrap(async (req, res) => {
       valid(req.params.offeringId);
       if (!req.body || typeof req.body.addDropOpen !== "boolean" ||
@@ -54,7 +82,7 @@ export function createRegistrationController({ User, Record, Offering, Registrat
         const row = await Offering.findOneAndUpdate({ _id: o._id }, { $set: {
           addDropOpen: req.body.addDropOpen,
           ...(deadline ? { addDropClosesAt: deadline } : {}),
-        } }, { new: true, session, runValidators: true }).populate("course").populate("term").lean();
+        } }, { returnDocument: "after", session, runValidators: true }).populate("course").populate("term").lean();
         updated = publicOffering(row);
       });
       res.json({ offering: updated });
@@ -84,38 +112,13 @@ export function createRegistrationController({ User, Record, Offering, Registrat
       if (Object.keys(req.body).some(key => key !== "offeringId")) fail(400, "INVALID_INPUT", "Only offeringId is accepted.");
       await scopedStudent(req);
       let result;
-      await transaction(async session => {
-        const o = await offering(req.body.offeringId, session);
-        if (!o) fail(404, "OFFERING_NOT_FOUND", "Offering not found.");
-        await lockTerm(o.term, session);
-        await scopedStudent(req, session, true);
-        // Touch the offering to conflict with concurrent edits of its capacity or timetable.
-        await Offering.updateOne({ _id: o._id }, { $set: { updatedAt: new Date() } }, { session });
-        const records = await Record.find({ student: req.params.id }).session(session).lean();
-        const registrations = await active(req.params.id, session);
-        const used = await Registration.countDocuments({ offering: o._id, status: "registered" }).session(session);
-        const rule = offeringEligibility(o, records, registrations, used);
-        if (!rule.eligible) fail(409, rule.code, rule.reason);
-        // Reuse a dropped row, compatible with both unique and partial unique seed indexes.
-        let row = await Registration.findOneAndUpdate({ student: req.params.id, offering: o._id, status: "dropped" },
-          { $set: { status: "registered" } }, { new: true, session });
-        if (!row) [row] = await Registration.create([{ student: req.params.id, offering: o._id, status: "registered" }], { session });
-        result = { id: String(row._id), status: row.status, offering: publicOffering(o) };
-      });
+      await transaction(async session => { result = await registerInSession(req, session); });
       res.status(201).json({ registration: result });
     }),
     drop: wrap(async (req, res) => {
       valid(req.params.id); valid(req.params.registrationId);
       await scopedStudent(req);
-      await transaction(async session => {
-        const row = await Registration.findOne({ _id: req.params.registrationId, student: req.params.id, status: "registered" }).session(session).lean();
-        if (!row) fail(404, "REGISTRATION_NOT_FOUND", "Active registration not found.");
-        const o = await offering(row.offering, session);
-        if (!o) throw new Error("Missing registration offering");
-        await lockTerm(o.term, session);
-        await scopedStudent(req, session, true);
-        await Registration.updateOne({ _id: row._id, status: "registered" }, { $set: { status: "dropped" } }, { session });
-      });
+      await transaction(session => dropInSession(req, session));
       res.json({ registration: { id: req.params.registrationId, status: "dropped" } });
     }),
   };

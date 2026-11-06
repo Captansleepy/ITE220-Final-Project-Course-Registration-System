@@ -1,3 +1,4 @@
+import AddDropRequest from "./models/AddDropRequest.js";
 import Registration from "./models/Registration.js";
 import { createStudentRoutes } from "./routes/studentRoutes.js";
 import Record from "./models/Record.js";
@@ -34,9 +35,9 @@ app.use(
   createAdminRoutes(User, Course, Offering, process.env.JWT_SECRET)
 );
 
-app.use("/api/advisor", createAdvisorRoutes(User, Record, process.env.JWT_SECRET, { Course, Offering, Registration, Term }));
+app.use("/api/advisor", createAdvisorRoutes(User, Record, process.env.JWT_SECRET, { Course, Offering, Registration, Term, AddDropRequest }));
 
-app.use("/api/student", createStudentRoutes(User, Record, Registration, process.env.JWT_SECRET));
+app.use("/api/student", createStudentRoutes(User, Record, Registration, process.env.JWT_SECRET, {Offering, Term, AddDropRequest}));
 
 app.use((req, res) => {
   res.status(404).json({

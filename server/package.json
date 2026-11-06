@@ -8,7 +8,10 @@
     "seed": "node --env-file=.env seed.cjs --apply",
     "seed:preview": "node --env-file=.env seed.cjs --preview",
     "test": "node --test",
-    "test:integration": "node --env-file=.env scripts/acceptance.mjs"
+    "test:integration": "node --env-file=.env scripts/acceptance.mjs",
+    "demo:preview": "node scripts/seed-demo.mjs --preview",
+    "demo:seed": "node --env-file=.env scripts/seed-demo.mjs --apply",
+    "test:requests:integration": "node --env-file=.env scripts/check-requests.mjs"
   },
   "keywords": [],
   "author": "",

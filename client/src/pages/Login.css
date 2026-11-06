@@ -1,87 +1,27 @@
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: #f4f6f8;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 36px;
-  background: #ffffff;
-  border: 1px solid #d8dee8;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.login-card h1 {
-  margin: 0 0 8px;
-  color: #172033;
-  font-size: 28px;
-}
-
-.login-subtitle {
-  margin: 0 0 28px;
-  color: #667085;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #172033;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #cfd6df;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.form-group input:focus {
-  outline: 2px solid #2563eb;
-  border-color: #2563eb;
-}
-
-.field-error,
-.login-error {
-  margin-top: 8px;
-  color: #a31919;
-  font-size: 14px;
-}
-
-.login-card button {
-  width: 100%;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.login-card button:hover:not(:disabled) {
-  background: #1d4ed8;
-}
-
-.login-card button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@media (max-width: 500px) {
-  .login-card {
-    padding: 24px;
-  }
-}
+.login-page { min-height:100vh; display:grid; grid-template-columns: minmax(420px, .95fr) minmax(420px,1.05fr); }
+.login-intro { background:var(--navy); color:#d8e5ed; padding:48px 12%; display:flex; flex-direction:column; }
+.portal-wordmark { display:flex; align-items:center; gap:12px; color:white; text-decoration:none; font-size:1.1rem; font-weight:650; letter-spacing:-.02em; }
+.portal-symbol { display:grid; place-items:center; width:36px; height:36px; border:1px solid #81bdaf; background:#1e514f; color:#b9e6d7; border-radius:10px; font-size:1.2rem; }
+.login-intro-copy { margin:auto 0; padding:64px 0; }
+.login-intro .eyebrow { color:#8bd3be; }
+.login-intro h2 { color:white; font-size:clamp(2.25rem,3.5vw,3.5rem); font-weight:600; letter-spacing:-.045em; line-height:1.13; margin:18px 0 24px; }
+.login-intro-copy > p:not(.eyebrow) { max-width:350px; color:#afc4d3; font-size:.95rem; line-height:1.8; margin-bottom:40px; }
+.login-feature { display:flex; gap:18px; margin-top:24px; }
+.login-feature > span { font-size:.65rem; color:#8bd3be; padding-top:4px; font-variant-numeric:tabular-nums; }
+.login-feature strong { color:#ecf5f8; font-size:.85rem; font-weight:600; }
+.login-feature p { font-size:.78rem; color:#afc4d3; margin:4px 0; }
+.login-intro-footer { font-size:.7rem; color:#afc4d3; border-top:1px solid #ffffff1f; padding-top:20px; margin:0; }
+.login-form-area { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 40px 30px; background:#fcfdfd; }
+.login-card { width:100%; max-width:390px; margin:auto 0; padding:36px 0; }
+.login-card h1 { margin:14px 0 10px; font-size:2.25rem; font-weight:600; }
+.login-subtitle { color:var(--muted); margin:0 0 36px; font-size:.9rem; }
+.form-group { margin-bottom:22px; }
+.form-group label { display:block; margin-bottom:8px; font-weight:600; font-size:.8rem; }
+.form-group input { width:100%; min-height:48px; }
+.form-group input::placeholder { color:#8797a2; }
+.field-error, .login-error { color:var(--danger); font-size:.8rem; }
+.login-card button { background:var(--teal); color:white; border:0; width:100%; min-height:48px; margin-top:8px; }
+.login-card button:hover:not(:disabled) { background:var(--teal-hover); }
+.login-support { text-align:center; margin:26px 0 0; font-size:.75rem; line-height:1.8; color:var(--muted); }
+.login-footer { text-align:center; color:var(--muted); font-size:.65rem; margin-top:30px; }
+@media(max-width:850px) { .login-page { grid-template-columns:1fr; } .login-intro { padding:28px 24px; } .login-intro-copy { padding:32px 0 0; } .login-intro h2 { font-size:2.2rem; } .login-intro h2 br { display:none; } .login-feature, .login-intro-footer { display:none; } .login-intro-copy > p:not(.eyebrow) { margin-bottom:8px; } .login-form-area { padding:28px 24px; } .login-card { padding:20px 0; } }
