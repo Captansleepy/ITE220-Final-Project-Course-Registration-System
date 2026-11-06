@@ -44,6 +44,13 @@ const userSchema = new mongoose.Schema(
       default: true,
       required: true,
     },
+    // Goes up by one whenever the password changes.
+    // Login tokens carry this number, so older tokens stop working.
+    sessionVersion: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     collection: "users",

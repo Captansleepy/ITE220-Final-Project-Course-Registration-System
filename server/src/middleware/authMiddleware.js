@@ -13,6 +13,10 @@ export function createRequireAuth(User, secret) {
     if (!user || user.active !== true || !ROLES.includes(user.role)) {
       return authError(res, 401, 'UNAUTHORIZED', 'Sign in to continue.');
     }
+    // If the password changed after this token was issued, the versions differ.
+    if (payload.sv !== (user.sessionVersion ?? 0)) {
+      return authError(res, 401, 'UNAUTHORIZED', 'Your session has ended. Please sign in again.');
+    }
     req.user = user;
     next();
   };

@@ -385,6 +385,8 @@ export function createAdminController(User, Course, Offering) {
             );
           }
           user.passwordHash = await bcrypt.hash(body.password, 12);
+          // Log this user out everywhere: their old tokens no longer match.
+          user.sessionVersion = (user.sessionVersion ?? 0) + 1;
         }
 
         if (user.role === "student") {

@@ -24,4 +24,15 @@
 .login-card button:hover:not(:disabled) { background:var(--teal-hover); }
 .login-support { text-align:center; margin:26px 0 0; font-size:.75rem; line-height:1.8; color:var(--muted); }
 .login-footer { text-align:center; color:var(--muted); font-size:.65rem; margin-top:30px; }
+/* Password recovery and sign-in notices */
+.label-row { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:8px; }
+.label-row label { margin-bottom:0; }
+.forgot-link { font-size:.78rem; font-weight:600; text-decoration:none; }
+.forgot-link:hover { text-decoration:underline; }
+.auth-notice { background:#e8f4f1; border:1px solid #b6dbd2; color:#0b5148; border-radius:8px; padding:12px 14px; font-size:.85rem; line-height:1.6; margin:0 0 24px; }
+.auth-back-link { display:inline-block; margin-top:24px; font-size:.82rem; font-weight:600; text-decoration:none; }
+.auth-back-link:hover { text-decoration:underline; }
+.auth-button-link { display:flex; align-items:center; justify-content:center; min-height:48px; border-radius:8px; background:var(--teal); color:white; font-size:.85rem; font-weight:600; text-decoration:none; }
+.auth-button-link:hover { background:var(--teal-hover); }
+.auth-button-link + .auth-back-link { display:block; text-align:center; }
 @media(max-width:850px) { .login-page { grid-template-columns:1fr; } .login-intro { padding:28px 24px; } .login-intro-copy { padding:32px 0 0; } .login-intro h2 { font-size:2.2rem; } .login-intro h2 br { display:none; } .login-feature, .login-intro-footer { display:none; } .login-intro-copy > p:not(.eyebrow) { margin-bottom:8px; } .login-form-area { padding:28px 24px; } .login-card { padding:20px 0; } }

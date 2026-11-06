@@ -72,3 +72,32 @@ test('missing or short secret fails setup', () => {
   assert.throws(() => createAuthRoutes({}, undefined));
   assert.throws(() => createAuthRoutes({}, 'short'));
 });
+
+// --- Session version (password changes log out old sessions) ---
+test('token made before a password change stops working', async t => {
+  const f = await fixture(t);
+  const { token } = await (await f.login()).json();
+  assert.equal((await f.request('/api/auth/me', token)).status, 200);
+  // Simulate a password change: the version goes up by one.
+  f.state.user.sessionVersion = 1;
+  assert.equal((await f.request('/api/auth/me', token)).status, 401);
+  // Logging in again gives a token with the new version, which works.
+  const fresh = await (await f.login()).json();
+  assert.equal(jwt.decode(fresh.token).sv, 1);
+  assert.equal((await f.request('/api/auth/me', fresh.token)).status, 200);
+});
+test('older tokens without a version still work for unchanged accounts', async t => {
+  const f = await fixture(t);
+  const options = { subject: id, issuer: 'course-registration-api', audience: 'course-registration-client', expiresIn: '1h' };
+  const oldStyle = jwt.sign({}, secret, options);
+  assert.equal((await f.request('/api/auth/me', oldStyle)).status, 200);
+  f.state.user.sessionVersion = 2;
+  assert.equal((await f.request('/api/auth/me', oldStyle)).status, 401);
+});
+test('reject tokens with an invalid session version', async t => {
+  const f = await fixture(t);
+  const options = { subject: id, issuer: 'course-registration-api', audience: 'course-registration-client', expiresIn: '1h' };
+  for (const sv of [-1, 1.5, '0', null]) {
+    assert.equal((await f.request('/api/auth/me', jwt.sign({ sv }, secret, options))).status, 401);
+  }
+});
