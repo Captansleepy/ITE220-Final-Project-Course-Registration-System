@@ -22,6 +22,8 @@ jobs:
         run: npm test --prefix server
       - name: Install client
         run: npm ci --prefix client
+      - name: Frontend timetable tests
+        run: npm run test --prefix client
       - name: Frontend production build
         run: npm run build --prefix client
       - name: Frontend lint

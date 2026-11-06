@@ -1,3 +1,4 @@
+import { createRequestController } from "../controllers/requestController.js";
 import { createRegistrationController } from "../controllers/registrationController.js";
 import { createOfferingController } from "../controllers/offeringController.js";
 import { Router } from "express";
@@ -12,6 +13,11 @@ export function createAdvisorRoutes(User, Record, secret, registrationModels) {
   router.get("/students", controller.listStudents);
   router.get("/students/:id/history", controller.history);
   if (registrationModels) {
+    if (registrationModels.AddDropRequest) {
+      const requests = createRequestController({User, Record, ...registrationModels});
+      router.get('/requests', requests.list);
+      router.post('/requests/:requestId/review', requests.review);
+    }
     const registration = createRegistrationController({ User, Record, ...registrationModels });
     if (registrationModels.Course) {
       const offerings = createOfferingController(registrationModels);
