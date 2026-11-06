@@ -1,58 +1,87 @@
 # Course Portal
 
-Personal continuation by Sham Bahadu, built on the team's submitted Course Registration System. The personal version includes a light navy-and-teal interface, a weekly student timetable, fictional demo data and in-app advisor-reviewed Add/Drop requests. This is a local development branch, not a deployed service.
+Personal continuation by Sham Bahadu, built on the team's submitted Course Registration System. The personal version adds a light navy-and-teal interface, a weekly student timetable, fictional demo data, in-app advisor-reviewed Add/Drop requests and password recovery. It runs locally for development; it is not a deployed service and is not ready for real student records.
 
-## Current milestone
+## What's included
 
-- Redesigned login with responsive layout, consistent typography, navy/teal colors and accessible focus states.
-- Shared styling for the existing Admin and Advisor workspaces.
-- Student weekly timetable drawn from the existing authenticated dashboard response, with Week/List switching, multiple weekly meetings, weekend support and handling for missing schedules.
-- Overlapping legacy meetings are displayed side by side; the backend registration rules remain authoritative.
-- No new runtime dependencies. Four timetable logic tests are included.
+**Interface and timetable**
+- Redesigned sign-in with a responsive layout, navy/teal colors and accessible focus states, plus shared styling for the Admin and Advisor workspaces.
+- Student weekly timetable built from the existing dashboard data, with Week/List views, multiple weekly meetings, weekend classes and clear handling of missing schedules. Overlapping legacy meetings are shown side by side; backend registration rules still decide what is allowed.
 
-Students can now submit Add/Drop requests inside the website, cancel pending requests and read advisor decisions. Advisors have a pending inbox; approval atomically updates registration using the existing course rules. See [request workflow and tests](docs/in-app-requests.md). Password recovery is still planned. This version is not ready for real student records.
+**Add/Drop requests**
+- Students submit Add/Drop requests inside the website, cancel pending ones and read advisor decisions.
+- Advisors have a pending inbox. Approval updates registration in one step using the existing course rules. See [request workflow and tests](docs/in-app-requests.md).
+
+**Password recovery**
+- "Forgot your password?" on the sign-in page leads to a Forgot Password page and an emailed link to a Reset Password page.
+- The request gives the same reply whether or not the email is registered. Only active accounts receive a link.
+- Links work once, for 30 minutes. A newer link cancels older ones. Only a hash of each link is stored.
+- Requests are rate-limited per computer and per email address.
+- A successful reset, or an admin changing someone's password, signs that user out of every existing session.
+- When a signed-in page is refused (expired session, changed password or deactivated account), the website returns to sign-in with a short notice.
+- **Email is development-only for now.** With `MAIL_TRANSPORT=console` the email, including the link, is printed in the backend terminal instead of being sent. No real email provider is configured yet, and demo addresses ending in `.test` cannot receive mail.
 
 ## Local isolation
 
-This personal checkout is separate from the submitted team folder. Its local configuration uses a separately configured personal database and credentials. Frontend defaults to localhost:5174; backend API address defaults to localhost:5002/api. These differ from the team's default ports and keep browser login storage on a separate origin.
+This personal checkout is separate from the submitted team folder and uses its own MongoDB Atlas database and credentials. The frontend runs on localhost:5174 and the API on localhost:5002/api. These differ from the team's ports, so browser logins are kept separate.
 
-The upstream remote points to the original team repository for reference; its push URL is DISABLED. The origin remote points to https://github.com/MohanBro/course-registration-side-project.git. Branch: feature/portal-redesign.
+Remotes: `origin` is https://github.com/MohanBro/course-registration-side-project.git; `upstream` is the original team repository, kept for reference with its push URL set to DISABLED. `main` holds the merged work, and new work happens on `feature/...` branches merged through pull requests.
 
-## Run the frontend
-
-From this folder:
+Local `main` still tracks `upstream/main`, so update it explicitly from your own repository:
 
 ```bash
-npm ci --prefix client
-npm run dev --prefix client
+git checkout main
+git pull --ff-only origin main
 ```
 
-Open http://localhost:5174. Keep the frontend running in one terminal and run `npm run dev --prefix server` in another. The local personal Atlas setup and fictional demo support all three roles; see [demo accounts and scenarios](docs/demo-data.md).
+## Backend setup
 
-## Personal backend and demo setup
+Copy `server/.env.example` to `server/.env`, then set your own MongoDB URI, a separate personal database name, a new JWT secret and a demo password. Keep `MAIL_TRANSPORT=console` for local password-reset testing. Never reuse the team's database or secrets, and never commit `server/.env`.
 
-Copy server/.env.example to server/.env locally, then configure your own MongoDB URI, a separate personal database and a new JWT secret. Never reuse the team's database or secrets. The original seed/workbook remains inherited reference material. Its first 17 histories were reported as based on real academic histories; the dedicated `demo:seed` command generates independent fictional histories without reading that workbook. Use `npm run demo:preview --prefix server` first, and `npm run demo:seed --prefix server` only for a new empty personal database. Never rerun it over existing data. No shared database was modified for this milestone.
+Demo data: `npm run demo:preview --prefix server` shows what would be created without connecting. `npm run demo:seed --prefix server` fills a **new, empty** personal database with fictional people and histories; it refuses to run over existing data. See [demo accounts and scenarios](docs/demo-data.md).
 
-With your personal backend configured, use npm run dev --prefix server on port 5002. The copied environment example sets CLIENT_ORIGIN to http://localhost:5174. Node's environment loading requires the server working directory for the current scripts; run `cd server` then `npm run dev` if starting through npm --prefix does not resolve your local file as expected.
+The inherited workbook `server/CSC220-Project-Info_final_1.xlsx` is still in the repository. Its first 17 histories were reported as based on real academic records. The demo seed does not read it.
+
+## Run the portal
+
+Use two terminals:
+
+```bash
+cd server && npm run dev        # API on http://localhost:5002
+npm run dev --prefix client     # website on http://localhost:5174
+```
+
+Open http://localhost:5174. The backend reads `.env` from the `server` folder, so start it from there. Install dependencies first with `npm ci --prefix client` and `npm ci --prefix server` if needed.
 
 ## Checks
 
+Offline checks (no database needed). GitHub Actions runs these on pushes and pull requests:
+
 ```bash
-npm run test --prefix client
+npm test --prefix server          # 63 backend tests
+npm test --prefix client          # 7 tests: timetable and password form
 npm run lint --prefix client
 npm run build --prefix client
-npm test --prefix server
 ```
 
-The last command runs inherited unit/fixture tests, not a live Atlas acceptance run. The inherited integration command creates a separate retained Atlas test database; do not run it until personal credentials and the replacement synthetic dataset are ready.
+Live Atlas checks. Each one creates a brand-new temporary database, runs the real server against it and deletes it afterwards. Your demo database is not touched.
+
+```bash
+npm run test:requests:integration --prefix server   # Add/Drop requests
+npm run test:sessions:integration --prefix server   # password change ends old sessions
+npm run test:reset:integration --prefix server      # password reset flow
+```
+
+The older inherited `test:integration` script works differently and keeps its test database; inspect it before running.
 
 ## Learn and continue
 
 - [Milestones and feature decisions](docs/development-roadmap.md)
 - [What changed and how the timetable works](docs/learning-milestone-1.md)
 - [In-app request workflow](docs/in-app-requests.md)
+- [Demo accounts and scenarios](docs/demo-data.md)
 - [Original group README](docs/original-group-readme.md)
 
 ## Attribution
 
-The original course project was built by Rachaphon Bhetcharut, Sham Bahadu, Panruethai Thubthimthong, Hathairat Deesrisuk and Trithep Sik. Original repository: https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System. Its Git history is preserved. The redesign and subsequent personal additions should be described separately in the project documentation rather than presenting the entire inherited application as solo work.
+The original course project was built by Rachaphon Bhetcharut, Sham Bahadu, Panruethai Thubthimthong, Hathairat Deesrisuk and Trithep Sik. Original repository: https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System. Its Git history is preserved. The redesign and later personal additions are described separately rather than presenting the entire inherited application as solo work.
